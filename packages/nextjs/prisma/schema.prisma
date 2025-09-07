@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// MODELO PARA LAS CAMPAÑAS
+// Almacena la información principal de cada campaña de airdrop.
+model campaigns {
+  id                Int      @id @default(autoincrement())
+  name              String
+  image_url         String? // Opcional, por si se usa una imagen por defecto
+  target_cast_hash  String   @unique // El hash del cast al que los usuarios deben dar "like"
+  max_mints         Int      @default(100)
+  created_at        DateTime @default(now())
+
+  // Relaciones: una campaña puede tener muchos nfts minteados y muchos puntajes de juego.
+  nfts_minted       nfts_minted[]
+  gamification_scores gamification_scores[]
+}
+
+// MODELO PARA LOS NFTS ENTREGADOS
+// Registra cada NFT que se ha entregado para evitar duplicados.
+model nfts_minted {
+  id                Int      @id @default(autoincrement())
+  token_id          Int
+  recipient_address String
+  minted_at         DateTime @default(now())
+
+  // Relación: cada registro de mint pertenece a una campaña.
+  campaign          campaigns @relation(fields: [campaign_id], references: [id])
+  campaign_id       Int
+
+  // Restricción: Un usuario solo puede recibir un NFT por campaña.
+  @@unique([campaign_id, recipient_address])
+}
+
+// MODELO PARA LA GAMIFICACIÓN
+// Almacena los puntajes de los participantes en la "Guerra de Influencia".
+model gamification_scores {
+  id                  Int      @id @default(autoincrement())
+  nft_holder_address  String   // La dirección del dueño del NFT
+  score               Int      @default(0)
+  tracked_cast_hash   String?  // El hash del cast del participante que estamos rastreando
+
+  // Relación: cada puntaje pertenece a una campaña.
+  campaign            campaigns @relation(fields: [campaign_id], references: [id])
+  campaign_id         Int
+
+  // Restricción: Un usuario solo puede tener un puntaje por campaña.
+  @@unique([campaign_id, nft_holder_address])
+}
