@@ -24,7 +24,8 @@ export async function GET(request: NextRequest) {
                     <meta property="fc:frame:image" content="${imageUrl}" />
                     <meta property="fc:frame:button:1" content="Actualizar Progreso" />
                     <meta property="fc:frame:button:2" content="¿Cómo participo?" />
-                    <meta property="fc:frame:post_url" content="${HOST}/api/frame?campaignId=${campaignId}" />
+                    <meta property="fc:frame:button:3" content="🎁 Verificar y Reclamar NFT" />
+                    <meta property="fc:frame:post_url" content="${HOST}/api/claim" />
                 </head>
             </html>
         `;

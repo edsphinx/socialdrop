@@ -57,3 +57,18 @@ export async function getUserDataFromFid(fid: number): Promise<{ address: string
     return null;
   }
 }
+
+export async function didUserLikeCast(fid: number, castHash: string): Promise<boolean> {
+  try {
+    const response = await neynarClient.fetchCastReactions({
+      hash: castHash,
+      types: ["likes"],
+      viewerFid: fid,
+    });
+
+    return response.reactions.some(reaction => reaction.user.fid === fid);
+  } catch (error) {
+    console.error("[Neynar Service] Error al verificar la reacción del cast:", error);
+    return false;
+  }
+}
