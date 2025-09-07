@@ -8,7 +8,14 @@ const levelImages: { [key: number]: string } = {
   4: "ipfs://bafybeihj4kvd47itz6dzt5zh4o4ze72f3ybn3fhaadlwwjxh4r4utactmy",
 };
 
-export async function GET(request: Request, { params }: { params: { level: string } }) {
+interface RouteContext {
+  params: Promise<{
+    level: string;
+  }>;
+}
+
+export async function GET(request: Request, context: RouteContext) {
+  const params = await context.params;
   const level = parseInt(params.level, 10);
 
   if (isNaN(level) || !levelImages[level]) {
