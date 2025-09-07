@@ -33,3 +33,9 @@ export async function recordMint(campaignId: number, tokenId: number, recipientA
     },
   });
 }
+
+export async function findCampaignById(campaignId: number) {
+  return await prisma.campaigns.findUnique({
+    where: { id: campaignId },
+  });
+}
