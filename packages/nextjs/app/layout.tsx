@@ -1,21 +1,19 @@
-import "@rainbow-me/rainbowkit/styles.css";
+// app/layout.tsx
 import { ScaffoldEthAppWithProviders } from "~~/components/ScaffoldEthAppWithProviders";
-import { ThemeProvider } from "~~/components/ThemeProvider";
 import "~~/styles/globals.css";
-import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";
 
-export const metadata = getMetadata({
-  title: "Scaffold-ETH 2 App",
-  description: "Built with 🏗 Scaffold-ETH 2",
-});
+export const metadata = {
+  title: "SocialDrop Mini-App",
+  description: "SocialDrop Campaign Manager",
+};
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   return (
-    <html suppressHydrationWarning className={``}>
+    <html suppressHydrationWarning>
       <body>
-        <ThemeProvider enableSystem>
-          <ScaffoldEthAppWithProviders>{children}</ScaffoldEthAppWithProviders>
-        </ThemeProvider>
+        {/* Mantenemos los Providers para toda la funcionalidad de wallet y blockchain,
+            pero eliminamos Header, Footer, etc., para una UI limpia de Mini-App. */}
+        <ScaffoldEthAppWithProviders>{children}</ScaffoldEthAppWithProviders>
       </body>
     </html>
   );
