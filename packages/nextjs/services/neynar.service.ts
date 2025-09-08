@@ -1,8 +1,14 @@
-import { neynarClient } from "~~/lib/clients/neynar";
+import { personalNeynarClient, readOnlyNeynarClient } from "~~/lib/clients/neynar";
+
+interface CastOptions {
+  embeds?: { url: string }[];
+  channelId?: string;
+  replyTo?: string;
+}
 
 export async function getWalletFromFid(fid: number): Promise<string | null> {
   try {
-    const userResponse = await neynarClient.fetchBulkUsers({ fids: [fid] });
+    const userResponse = await personalNeynarClient.fetchBulkUsers({ fids: [fid] });
     const user = userResponse.users[0];
 
     if (!user) return null;
@@ -27,7 +33,7 @@ export async function getWalletFromFid(fid: number): Promise<string | null> {
 export async function getUserDataFromFid(fid: number): Promise<{ address: string; username: string } | null> {
   try {
     console.log(`[Neynar Service] Buscando datos para el FID: ${fid}`);
-    const userResponse = await neynarClient.fetchBulkUsers({ fids: [fid] });
+    const userResponse = await personalNeynarClient.fetchBulkUsers({ fids: [fid] });
     const user = userResponse.users[0];
 
     if (!user) {
@@ -60,7 +66,7 @@ export async function getUserDataFromFid(fid: number): Promise<{ address: string
 
 export async function didUserLikeCast(fid: number, castHash: string): Promise<boolean> {
   try {
-    const response = await neynarClient.fetchCastReactions({
+    const response = await readOnlyNeynarClient.fetchCastReactions({
       hash: castHash,
       types: ["likes"],
       viewerFid: fid,
@@ -70,5 +76,36 @@ export async function didUserLikeCast(fid: number, castHash: string): Promise<bo
   } catch (error) {
     console.error("[Neynar Service] Error al verificar la reacción del cast:", error);
     return false;
+  }
+}
+
+/**
+ * Publica un cast en Farcaster usando Neynar.
+ * @param text - El contenido del cast.
+ * @param options - Opciones adicionales como embeds para Frames.
+ * @returns El hash del cast publicado.
+ */
+export async function publishCast(text: string, options: CastOptions = {}) {
+  const SIGNER_UUID = process.env.NEYNAR_SIGNER_UUID;
+  if (!SIGNER_UUID) {
+    throw new Error("NEYNAR_SIGNER_UUID no está configurado en .env. La publicación del cast ha sido cancelada.");
+  }
+
+  try {
+    console.log(`[Farcaster Service] Publicando cast...`);
+
+    const response = await personalNeynarClient.publishCast({
+      signerUuid: SIGNER_UUID, // TypeScript ahora sabe que esto es un 'string'
+      text,
+      ...options,
+    });
+
+    const hash = response.cast.hash;
+
+    console.log(`[Farcaster Service] Cast publicado exitosamente. Hash: ${hash}`);
+    return { success: true, hash: hash };
+  } catch (error) {
+    console.error("[Farcaster Service] Error al publicar el cast:", error);
+    return { success: false, hash: null };
   }
 }
