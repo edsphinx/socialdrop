@@ -1,12 +1,28 @@
-import { createPublicClient, createWalletClient, decodeEventLog, http } from "viem";
+import { type Chain, createPublicClient, createWalletClient, decodeEventLog, http, publicActions } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { hardhat } from "viem/chains";
-// Cambiado a hardhat para pruebas locales
+import { baseSepolia, hardhat } from "viem/chains";
 import deployedContracts from "~~/contracts/deployedContracts";
 
-const chainId = hardhat.id; // Usamos el chainId de la red local
+let chain: Chain;
+let transport: any;
 
-const contractData = deployedContracts[chainId]?.EvolvingNFT;
+if (process.env.NODE_ENV === "production") {
+  // --- PRODUCCIÓN (Vercel) ---
+  chain = baseSepolia;
+  if (!process.env.BASE_SEPOLIA_RPC_URL) {
+    throw new Error("BASE_SEPOLIA_RPC_URL is not set in .env for production");
+  }
+  transport = http(process.env.BASE_SEPOLIA_RPC_URL);
+  console.log("[Viem Service] Usando la red de producción: Base Sepolia");
+} else {
+  // --- DESARROLLO (Local) ---
+  chain = hardhat;
+  transport = http(); // http() sin argumentos apunta a http://127.0.0.1:8545
+  console.log("[Viem Service] Usando la red de desarrollo: Hardhat Local");
+}
+
+const chainId = chain.id;
+const contractData = deployedContracts[chainId as keyof typeof deployedContracts]?.EvolvingNFT;
 
 if (!contractData) {
   throw new Error(`Contrato EvolvingNFT no encontrado en la chainId ${chainId}. Asegúrate de haberlo desplegado.`);
@@ -14,25 +30,21 @@ if (!contractData) {
 
 const { address: contractAddress, abi: contractABI } = contractData;
 
-// --- CORRECCIÓN APLICADA AQUÍ ---
 if (!process.env.DEPLOYER_PRIVATE_KEY) {
   throw new Error("DEPLOYER_PRIVATE_KEY is not set in .env");
 }
-// Aseguramos el tipo correcto para Viem sin añadir un "0x" extra
 const account = privateKeyToAccount(process.env.DEPLOYER_PRIVATE_KEY as `0x${string}`);
-// --- FIN DE LA CORRECCIÓN ---
 
 const publicClient = createPublicClient({
-  chain: hardhat,
-  transport: http(), // Para la red local de Hardhat, no se necesita RPC_URL
+  chain,
+  transport,
 });
 
 const walletClient = createWalletClient({
   account,
-
-  chain: hardhat,
-  transport: http(),
-});
+  chain,
+  transport,
+}).extend(publicActions);
 
 /**
  * Mintea un nuevo NFT a la dirección especificada usando Viem.
