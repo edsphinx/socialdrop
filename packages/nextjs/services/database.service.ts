@@ -39,3 +39,19 @@ export async function findCampaignById(campaignId: number) {
     where: { id: campaignId },
   });
 }
+
+/**
+ * Obtiene los últimos N minters de una campaña para mostrar como ganadores recientes.
+ * @param {number} campaignId - El ID de la campaña.
+ * @param {number} limit - El número de ganadores a devolver.
+ * @returns {Promise<Array<import('@prisma/client').nfts_minted>>} - Una lista de los registros de mints recientes.
+ */
+export async function getRecentWinners(campaignId: number, limit: number = 5) {
+  return await prisma.nfts_minted.findMany({
+    where: { campaign_id: campaignId },
+    orderBy: {
+      minted_at: "desc",
+    },
+    take: limit,
+  });
+}
