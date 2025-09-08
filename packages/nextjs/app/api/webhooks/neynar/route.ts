@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import * as blockchain from "~~/services/blockchain.service";
 import * as db from "~~/services/database.service";
-import * as farcasterService from "~~/services/farcaster.service";
 import * as neynar from "~~/services/neynar.service";
 
 export async function POST(request: Request) {
@@ -58,7 +57,7 @@ export async function POST(request: Request) {
 
     // Construimos el texto y llamamos al servicio para publicarlo
     const castText = `🔥 ¡Boom! @${username} acaba de recibir un NFT de la campaña "${campaign.name}"! La magia está ocurriendo en tiempo real. ¿Quién será el siguiente? 👀`;
-    await farcasterService.publishCast(castText, { channelId: "socialdrop" });
+    await neynar.publishCast(castText, { channelId: "socialdrop" });
 
     return NextResponse.json(
       { message: `NFT minteado y cast de anuncio publicado para @${username}!` },

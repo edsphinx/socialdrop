@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import * as blockchain from "~~/services/blockchain.service";
 import * as db from "~~/services/database.service";
-import * as farcasterService from "~~/services/farcaster.service";
 import * as neynar from "~~/services/neynar.service";
 
 export async function POST(request: Request) {
@@ -48,7 +47,7 @@ export async function POST(request: Request) {
     await db.recordMint(campaign.id, mintResult.tokenId, recipientAddress);
 
     const castText = `🎉 ¡Éxito! @${username} acaba de reclamar el NFT #${mintResult.tokenId} del drop "${campaign.name}"!`;
-    await farcasterService.publishCast(castText);
+    await neynar.publishCast(castText);
 
     // --- Respuesta de Éxito ---
     return NextResponse.json({

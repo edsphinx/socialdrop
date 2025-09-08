@@ -1,5 +1,5 @@
-import * as farcasterService from "./farcaster.service";
 import { campaigns } from "@prisma/client";
+import * as neynar from "~~/services/neynar.service";
 
 // --- VERSIÓN MOCK (SIMULADA) DEL SERVICIO A0X ---
 // Úsala mientras consigues tus claves de API para no detener el desarrollo.
@@ -23,7 +23,7 @@ export async function announceCampaignStart(campaign: campaigns, frameUrl: strin
 Interactúa con el Frame para ver el progreso y cómo participar. ¡Los NFTs se entregan automáticamente! #SocialDrop #Base #Farcaster`;
 
   // Usamos el servicio de Farcaster para publicar, adjuntando el Frame
-  return await farcasterService.publishCast(text, {
+  return await neynar.publishCast(text, {
     embeds: [{ url: frameUrl }],
   });
 }
@@ -33,7 +33,7 @@ export async function announceNewWinner(winnerUsername: string, campaignName: st
 
 La magia está ocurriendo en tiempo real. ¿Quién será el siguiente? 👀`;
 
-  return await farcasterService.publishCast(text, { channelId: "socialdrop" });
+  return await neynar.publishCast(text, { channelId: "socialdrop" });
 }
 
 export async function announceCampaignEnd(campaignName: string) {
