@@ -1,23 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
+// La importación por defecto es el objeto SDK ya inicializado
 import Farcaster from "@farcaster/miniapp-sdk";
 import toast from "react-hot-toast";
 
+// app/miniapp/[campaignId]/page.tsx
+
 type FarcasterUser = Awaited<typeof Farcaster.context>["user"];
+
 const fc = Farcaster;
 
 export default function MiniAppDashboard() {
-  const searchParams = useSearchParams();
-  const campaignId = Number(searchParams.get("campaignId"));
+  const params = useParams();
+  const campaignId = Number(params.campaignId);
 
   const [campaignData, setCampaignData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isClaiming, setIsClaiming] = useState(false);
   const [user, setUser] = useState<FarcasterUser | null>(null);
 
-  // 1. Inicializar la Mini-App y obtener datos del usuario
   useEffect(() => {
     fc.actions.ready();
     fc.context
@@ -29,10 +32,8 @@ export default function MiniAppDashboard() {
       .catch(err => console.error("Error getting user context:", err));
   }, []);
 
-  // 2. Cargar datos de la campaña desde la API
   useEffect(() => {
-    // Solo hacemos fetch si tenemos un campaignId válido
-    if (campaignId > 0) {
+    if (campaignId) {
       setIsLoading(true);
       fetch(`/api/campaign-status?id=${campaignId}`)
         .then(res => res.json())
@@ -46,12 +47,9 @@ export default function MiniAppDashboard() {
           toast.error("No se pudo cargar la campaña.");
           setIsLoading(false);
         });
-    } else {
-      setIsLoading(false); // No hay campaignId, dejamos de cargar
     }
   }, [campaignId]);
 
-  // 3. Función para reclamar el NFT
   const handleClaim = async () => {
     if (!user?.fid) {
       toast.error("No se pudo obtener tu usuario de Farcaster.");
@@ -84,16 +82,8 @@ export default function MiniAppDashboard() {
     }
   };
 
-  if (!campaignId) {
-    return (
-      <div className="p-4 text-center text-white">
-        Bienvenido a SocialDrop. Por favor, accede a través de una campaña.
-      </div>
-    );
-  }
-
-  if (isLoading) return <div className="p-4 text-center text-white">Cargando Campaña...</div>;
-  if (!campaignData) return <div className="p-4 text-center text-white">No se encontró la campaña.</div>;
+  if (isLoading) return <div className="p-4 text-center">Cargando Campaña...</div>;
+  if (!campaignData) return <div className="p-4 text-center">No se encontró la campaña.</div>;
 
   return (
     <div className="p-8 text-white">
@@ -102,19 +92,7 @@ export default function MiniAppDashboard() {
         Progreso: {campaignData?.progress} / {campaignData?.total}
       </p>
 
-      {/* Mostramos los ganadores recientes si existen */}
-      {campaignData.recentWinners && campaignData.recentWinners.length > 0 && (
-        <div className="mt-6">
-          <h2 className="text-xl font-bold">Últimos Ganadores:</h2>
-          <ul className="list-disc pl-5 mt-2">
-            {campaignData.recentWinners.map((winner: any) => (
-              <li key={winner.tokenId}>@{winner.username}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <button className="btn btn-primary mt-8 w-full" onClick={handleClaim} disabled={isClaiming || !user}>
+      <button className="btn btn-primary mt-6 w-full" onClick={handleClaim} disabled={isClaiming || !user}>
         {isClaiming ? "Reclamando..." : "🎁 Reclamar mi NFT"}
       </button>
 
