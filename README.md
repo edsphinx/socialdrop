@@ -1,80 +1,54 @@
-# 🏗 Scaffold-ETH 2
+# SocialDrop 💧
 
-<h4 align="center">
-  <a href="https://docs.scaffoldeth.io">Documentation</a> |
-  <a href="https://scaffoldeth.io">Website</a>
-</h4>
+### Airdrops Virales y NFTs Evolutivos en Farcaster
 
-🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
+**SocialDrop** es una Mini-App construida sobre Base que transforma los airdrops de NFTs de eventos pasivos a experiencias sociales interactivas y gamificadas.
 
-⚙️ Built using NextJS, RainbowKit, Hardhat, Wagmi, Viem, and Typescript.
+---
 
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🪝 **[Custom hooks](https://docs.scaffoldeth.io/hooks/)**: Collection of React hooks wrapper around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with typescript autocompletion.
-- 🧱 [**Components**](https://docs.scaffoldeth.io/components/): Collection of common web3 components to quickly build your frontend.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
+**Enlaces Clave:**
+* **Demo en Vivo:** [https://socialdrop.live](https://socialdrop.live)
+* **Video de la Demo (4 min):** `[ENLACE A TU VIDEO AQUÍ]`
 
-![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
+---
 
-## Requirements
+## El Problema
+Los airdrops tradicionales en Web3 son ineficientes. Se anuncian en Twitter o Discord, los usuarios conectan sus wallets en un sitio externo, y la interacción termina ahí. No generan engagement sostenido ni aprovechan el poder de las redes sociales on-chain.
 
-Before you begin, you need to install the following tools:
+## Nuestra Solución: SocialDrop
+SocialDrop integra el proceso de airdrop directamente en el feed de Farcaster, convirtiendo una simple acción social —dar 'like' a un cast— en el punto de entrada a un ecosistema de recompensas.
 
-- [Node (>= v20.18.3)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
+Esto no solo distribuye NFTs, sino que incentiva a los usuarios a convertirse en embajadores de la marca, creando un ciclo de viralidad y engagement a largo plazo.
 
-## Quickstart
+## Features Clave
 
-To get started with Scaffold-ETH 2, follow the steps below:
+* **🚀 Creación de Campañas Simplificada:** Un panel de control intuitivo donde los creadores pueden lanzar una campaña en segundos, usando simplemente la URL de un cast.
+* **📱 Mini-App Nativa en Farcaster:** Una experiencia de usuario fluida dentro de Farcaster para ver el progreso de la campaña y reclamar NFTs.
+* **✨ Airdrop "On-Demand":** Los usuarios elegibles (que han dado 'like') pueden reclamar su NFT directamente desde la Mini-App, creando un momento de gratificación instantánea.
+* **💎 NFTs Evolutivos:** El Smart Contract (ERC-721) está diseñado para que los NFTs puedan "subir de nivel", cambiando sus metadatos on-chain.
+* **🏆 Gamificación (La Guerra de Influencia):** Un sistema donde los dueños de NFTs compiten por tener el cast más influyente (medido en 'likes'), lo que les permite evolucionar su NFT.
 
-1. Install dependencies if it was skipped in CLI:
+## Tech Stack
 
-```
-cd my-dapp-example
-yarn install
-```
+* **Blockchain:** Base Sepolia, Solidity, Hardhat, Viem
+* **Frontend:** Next.js (App Router), React, TypeScript, Tailwind CSS, DaisyUI
+* **Backend:** Next.js API Routes, Prisma, Supabase (PostgreSQL)
+* **Farcaster:** `@farcaster/miniapp-sdk`, Neynar API, OnchainKit
+* **Despliegue:** Vercel
 
-2. Run a local network in the first terminal:
+## Cómo Probarlo
 
-```
-yarn chain
-```
+1.  **Flujo del Creador:**
+    * Visita [https://socialdrop.live/admin](https://socialdrop.live/admin).
+    * Crea una nueva campaña pegando la URL de cualquier cast de Farcaster.
 
-This command starts a local Ethereum network using Hardhat. The network runs on your local machine and can be used for testing and development. You can customize the network configuration in `packages/hardhat/hardhat.config.ts`.
+2.  **Flujo del Participante:**
+    * Con una cuenta de Farcaster, dale 'like' al cast que configuraste.
+    * Abre el enlace de la Mini-App (ej. `https://socialdrop.live/c/1`).
+    * Haz clic en "Reclamar mi NFT". La transacción se ejecutará y recibirás el NFT en tu wallet.
 
-3. On a second terminal, deploy the test contract:
+## Visión a Futuro
 
-```
-yarn deploy
-```
-
-This command deploys a test smart contract to the local network. The contract is located in `packages/hardhat/contracts` and can be modified to suit your needs. The `yarn deploy` command uses the deploy script located in `packages/hardhat/deploy` to deploy the contract to the network. You can also customize the deploy script.
-
-4. On a third terminal, start your NextJS app:
-
-```
-yarn start
-```
-
-Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the `Debug Contracts` page. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
-
-Run smart contract test with `yarn hardhat:test`
-
-- Edit your smart contracts in `packages/hardhat/contracts`
-- Edit your frontend homepage at `packages/nextjs/app/page.tsx`. For guidance on [routing](https://nextjs.org/docs/app/building-your-application/routing/defining-routes) and configuring [pages/layouts](https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts) checkout the Next.js documentation.
-- Edit your deployment scripts in `packages/hardhat/deploy`
-
-
-## Documentation
-
-Visit our [docs](https://docs.scaffoldeth.io) to learn how to start building with Scaffold-ETH 2.
-
-To know more about its features, check out our [website](https://scaffoldeth.io).
-
-## Contributing to Scaffold-ETH 2
-
-We welcome contributions to Scaffold-ETH 2!
-
-Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/scaffold-eth-2/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-ETH 2.
+* **Monetización:** Implementar un sistema de fees para los creadores de campañas basado en el número de NFTs a distribuir.
+* **Leaderboard en Tiempo Real:** Mostrar el ranking de la "Guerra de Influencia" directamente en la Mini-App.
+* **Integración Multi-Can
