@@ -6,7 +6,7 @@ const miniAppConfig = {
   imageUrl: "https://socialdrop.live/og-image.png",
   buttons: [
     {
-      title: "🚩 Start",
+      title: "💧 Inicia SocialDrop",
       action: {
         type: "launch_miniapp",
         name: "Lanza SocialDrop",
@@ -23,6 +23,10 @@ export const metadata = {
   description: "SocialDrop Campaign Manager",
   other: {
     "fc:miniapp": JSON.stringify(miniAppConfig),
+    "fc:frame": "vNext",
+    "fc:frame:image": "https://socialdrop.live/og-image.png",
+    "fc:frame:post_url": "https://socialdrop.live/api/frame", // Asegúrate que este endpoint exista
+    "fc:frame:button:1": "Lanza SocialDrop", // <-- ESTA LÍNEA RESUELVE EL ERROR DEL BOTÓN
   },
 };
 
