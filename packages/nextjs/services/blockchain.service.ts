@@ -86,3 +86,21 @@ export async function mintNFT(
     return { success: false, tokenId: -1, hash: "0x" };
   }
 }
+
+export async function evolveNFT(tokenId: number): Promise<{ success: boolean; hash: `0x${string}` }> {
+  try {
+    const hash = await walletClient.writeContract({
+      address: contractAddress,
+      abi: contractABI,
+      functionName: "evolve",
+      args: [BigInt(tokenId)], // Los uint256 se pasan como BigInt
+    });
+
+    await publicClient.waitForTransactionReceipt({ hash });
+    console.log(`[Viem Service] ¡Evolución exitosa! Token ID: ${tokenId}`);
+    return { success: true, hash };
+  } catch (error) {
+    console.error(`[Viem Service] Error evolving NFT ${tokenId}:`, error);
+    return { success: false, hash: "0x" };
+  }
+}
