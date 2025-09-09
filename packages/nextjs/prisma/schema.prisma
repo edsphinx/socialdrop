@@ -21,6 +21,9 @@ model campaigns {
   max_mints         Int      @default(100)
   created_at        DateTime @default(now())
 
+  is_active         Boolean  @default(true)
+  creator_fid       Int? // Opcional, para saber quién la creó
+
   // Relaciones: una campaña puede tener muchos nfts minteados y muchos puntajes de juego.
   nfts_minted       nfts_minted[]
   gamification_scores gamification_scores[]
@@ -33,6 +36,9 @@ model nfts_minted {
   token_id          Int
   recipient_address String
   minted_at         DateTime @default(now())
+
+  user_fid          Int? // Guardamos el FID para búsquedas más rápidas
+  level             Int      @default(1) // Guardamos el nivel actual del NFT
 
   // Relación: cada registro de mint pertenece a una campaña.
   campaign          campaigns @relation(fields: [campaign_id], references: [id])
@@ -49,6 +55,8 @@ model gamification_scores {
   nft_holder_address  String   // La dirección del dueño del NFT
   score               Int      @default(0)
   tracked_cast_hash   String?  // El hash del cast del participante que estamos rastreando
+
+  nft_holder_fid      Int? // Guardamos el FID del dueño para relacionarlo más fácil
 
   // Relación: cada puntaje pertenece a una campaña.
   campaign            campaigns @relation(fields: [campaign_id], references: [id])

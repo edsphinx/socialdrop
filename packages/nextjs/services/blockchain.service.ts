@@ -104,3 +104,23 @@ export async function evolveNFT(tokenId: number): Promise<{ success: boolean; ha
     return { success: false, hash: "0x" };
   }
 }
+
+/**
+ * Lee el nivel de evolución actual de un NFT desde la blockchain.
+ * @param tokenId El ID del token a consultar.
+ * @returns {Promise<number>} El nivel actual del NFT.
+ */
+export async function getLevelOf(tokenId: number): Promise<number> {
+  try {
+    const level = await publicClient.readContract({
+      address: contractAddress,
+      abi: contractABI,
+      functionName: "tokenEvolutionLevel",
+      args: [BigInt(tokenId)],
+    });
+    return Number(level);
+  } catch (error) {
+    console.error(`[Viem Service] Error al leer el nivel del token ${tokenId}:`, error);
+    return 1; // Devolvemos 1 como fallback seguro
+  }
+}

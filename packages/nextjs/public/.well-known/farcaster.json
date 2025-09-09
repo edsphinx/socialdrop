@@ -1,0 +1,32 @@
+{
+  "frame": {
+    "name": "SocialDrop",
+    "version": "1",
+    "iconUrl": "https://socialdrop.live/favicon.png",
+    "homeUrl": "https://socialdrop.live",
+    "buttonTitle": "Abrir SocialDrop",
+    "splashImageUrl": "https://socialdrop.live/splash.jpg",
+    "splashBackgroundColor": "#1A101F",
+    "webhookUrl": "https://socialdrop.live/api/webhook",
+    "subtitle": "Airdrops Virales y NFTs Evolutivos",
+    "description": "Convierte las interacciones en Farcaster en recompensas on-chain y haz crecer a tu comunidad con campañas de NFTs evolutivos.",
+    "primaryCategory": "social",
+    "tags": [
+      "social",
+      "airdrop",
+      "nft",
+      "community",
+      "gamification"
+    ],
+    "tagline": "Viral Airdrops NFTs Evolution",
+    "ogTitle": "Lanza Airdrops de NFTs Virales",
+    "ogImageUrl": "https://socialdrop.live/og-image.png",
+    "castShareUrl": "https://warpcast.com/~/compose?text=¡Prueba%20SocialDrop!%20La%20forma%20más%20fácil%20de%20lanzar%20airdrops%20de%20NFTs%20en%20Farcaster.&embeds[]=https://socialdrop.live",
+    "ogDescription": "Lanza campañas de NFTs que evolucionan con la interacción. Engagement real, recompensas on-chain."
+  },
+  "accountAssociation": {
+    "header": "eyJmaWQiOjIwMDM5LCJ0eXBlIjoiYXV0aCIsImtleSI6IjB4QWNEZTVjOWNkZjY3RjdBQTg3NTkyOGI5NjY4MTVFMWREYUE0M2E2QyJ9",
+    "payload": "eyJkb21haW4iOiJzb2NpYWxkcm9wLmxpdmUifQ",
+    "signature": "hCrP/Wx9uD1xYyPCxiIbJgyoNSMKOk1Y7xjhZTEqhyhbf62+Bev77+2p/tfmEpy2yraS//svn8UGNamGKCDq8Bw="
+  }
+}

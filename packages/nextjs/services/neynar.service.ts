@@ -109,3 +109,76 @@ export async function publishCast(text: string, options: CastOptions = {}) {
     return { success: false, hash: null };
   }
 }
+
+/**
+ * Obtiene el número total de 'likes' de un cast
+ * @param castHash El hash del cast a consultar.
+ * @returns {Promise<number>} El número total de likes.
+ */
+export async function getCastLikesCountSDK(castHash: string) {
+  try {
+    console.log(`[Neynar Service] Obteniendo conteo de likes para ${castHash} (vía SDK final)`);
+
+    const { cast } = await personalNeynarClient.lookupCastByHashOrUrl({
+      identifier: castHash,
+      type: "hash",
+    });
+
+    return cast;
+    // const likesCount = cast?.reactions?.likes_count;
+
+    // if (typeof likesCount === "number") {
+    //   console.log(`[Neynar Service] El cast tiene ${likesCount} likes.`);
+    //   return likesCount;
+    // }
+  } catch (error) {
+    console.error(`[Neynar Service] Error con lookupCastByHashOrUrl:`, error);
+    return 0;
+  }
+}
+
+/**
+ * Obtiene el número total de 'likes' de un cast, haciendo una llamada directa a la API de Neynar.
+ * Este método es el más robusto porque no depende del SDK.
+ * @param castHash El hash del cast a consultar.
+ * @returns {Promise<number>} El número total de likes.
+ */
+export async function getCastLikesCount(castHash: string): Promise<number> {
+  const apiKey = process.env.NEYNAR_API_KEY_PERSONAL;
+  if (!apiKey) {
+    console.error("[Neynar Service] La API key de lectura no está configurada.");
+    return 0;
+  }
+
+  const url = `https://api.neynar.com/v2/farcaster/cast?type=hash&identifier=${castHash}`;
+
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      api_key: apiKey,
+    },
+  };
+
+  try {
+    console.log(`[Neynar Service] Obteniendo conteo de likes para ${castHash} (vía fetch directo)`);
+
+    const response = await fetch(url, options);
+
+    if (!response.ok) {
+      throw new Error(`La API de Neynar respondió con el estado: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const likesCount = data.cast?.reactions?.likes_count;
+
+    if (typeof likesCount === "number") {
+      return likesCount;
+    }
+
+    return 0;
+  } catch (error) {
+    console.error(`[Neynar Service] Error al obtener el conteo de likes para ${castHash}:`, error);
+    return 0;
+  }
+}
