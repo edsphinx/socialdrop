@@ -1,4 +1,3 @@
-// app/layout.tsx
 import { ScaffoldEthAppWithProviders } from "~~/components/ScaffoldEthAppWithProviders";
 import "~~/styles/globals.css";
 
@@ -7,16 +6,18 @@ export const metadata = {
   description: "SocialDrop Campaign Manager",
 };
 
-const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
+const SocialDropApp = ({ children }: { children: React.ReactNode }) => {
   return (
     <html suppressHydrationWarning>
+      <head>
+        <meta name="fc:miniapp" content="<stringified MiniAppEmbed JSON>" />
+        <meta name="fc:frame" content="<stringified MiniAppEmbed JSON>" />
+      </head>
       <body>
-        {/* Mantenemos los Providers para toda la funcionalidad de wallet y blockchain,
-            pero eliminamos Header, Footer, etc., para una UI limpia de Mini-App. */}
         <ScaffoldEthAppWithProviders>{children}</ScaffoldEthAppWithProviders>
       </body>
     </html>
   );
 };
 
-export default ScaffoldEthApp;
+export default SocialDropApp;

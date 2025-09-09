@@ -1,37 +1,41 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import Farcaster from "@farcaster/miniapp-sdk";
 import toast from "react-hot-toast";
 
 type FarcasterUser = Awaited<typeof Farcaster.context>["user"];
+
+type NftData = {
+  name: string;
+  image: string;
+  tokenId: number;
+  transactionHash: string;
+};
+
 const fc = Farcaster;
 
 export default function MiniAppDashboard() {
-  const searchParams = useSearchParams();
-  const campaignId = Number(searchParams.get("campaignId"));
+  const params = useParams();
+  const campaignId = Number(params.campaignId);
 
   const [campaignData, setCampaignData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isClaiming, setIsClaiming] = useState(false);
   const [user, setUser] = useState<FarcasterUser | null>(null);
+  const [mintedNFT, setMintedNFT] = useState<NftData | null>(null);
 
-  // 1. Inicializar la Mini-App y obtener datos del usuario
   useEffect(() => {
     fc.actions.ready();
     fc.context
       .then(context => {
-        if (context.user) {
-          setUser(context.user);
-        }
+        if (context.user) setUser(context.user);
       })
       .catch(err => console.error("Error getting user context:", err));
   }, []);
 
-  // 2. Cargar datos de la campaña desde la API
   useEffect(() => {
-    // Solo hacemos fetch si tenemos un campaignId válido
     if (campaignId > 0) {
       setIsLoading(true);
       fetch(`/api/campaign-status?id=${campaignId}`)
@@ -39,24 +43,14 @@ export default function MiniAppDashboard() {
         .then(data => {
           if (data.error) throw new Error(data.error);
           setCampaignData(data);
-          setIsLoading(false);
         })
-        .catch(err => {
-          console.error("Error fetching campaign data:", err);
-          toast.error("No se pudo cargar la campaña.");
-          setIsLoading(false);
-        });
-    } else {
-      setIsLoading(false); // No hay campaignId, dejamos de cargar
+        .catch(err => toast.error(`No se pudo cargar la campaña. ${err}`))
+        .finally(() => setIsLoading(false));
     }
   }, [campaignId]);
 
-  // 3. Función para reclamar el NFT
   const handleClaim = async () => {
-    if (!user?.fid) {
-      toast.error("No se pudo obtener tu usuario de Farcaster.");
-      return;
-    }
+    if (!user?.fid) return toast.error("Usuario de Farcaster no encontrado.");
 
     setIsClaiming(true);
     const toastId = toast.loading("Reclamando tu NFT...");
@@ -69,13 +63,20 @@ export default function MiniAppDashboard() {
       });
 
       const result = await response.json();
+      if (!response.ok) throw new Error(result.message || "Falló el reclamo.");
+
       toast.dismiss(toastId);
-
-      if (!response.ok) {
-        throw new Error(result.message || "Falló el reclamo.");
-      }
-
       toast.success("¡NFT reclamado con éxito!");
+
+      const metadataResponse = await fetch(`/api/metadata/1`);
+      const metadata = await metadataResponse.json();
+
+      setMintedNFT({
+        name: metadata.name,
+        image: metadata.image.replace("ipfs://", "https://ipfs.io/ipfs/"),
+        tokenId: result.tokenId,
+        transactionHash: result.transactionHash,
+      });
     } catch (error: any) {
       toast.dismiss(toastId);
       toast.error(error.message);
@@ -84,41 +85,46 @@ export default function MiniAppDashboard() {
     }
   };
 
-  if (!campaignId) {
-    return (
-      <div className="p-4 text-center text-white">
-        Bienvenido a SocialDrop. Por favor, accede a través de una campaña.
-      </div>
-    );
-  }
-
-  if (isLoading) return <div className="p-4 text-center text-white">Cargando Campaña...</div>;
+  if (isLoading) return <div className="flex items-center justify-center min-h-screen text-white">Cargando...</div>;
   if (!campaignData) return <div className="p-4 text-center text-white">No se encontró la campaña.</div>;
 
+  // --- EL NUEVO JSX MEJORADO ---
   return (
-    <div className="p-8 text-white">
-      <h1 className="text-3xl font-bold mb-4">{campaignData?.name}</h1>
-      <p>
-        Progreso: {campaignData?.progress} / {campaignData?.total}
-      </p>
+    <div className="flex flex-col justify-between min-h-screen p-6 text-white text-center">
+      <div className="flex-grow flex flex-col items-center justify-center">
+        <h1 className="text-4xl font-bold">{campaignData?.name}</h1>
+        <p className="mt-2 text-gray-400">
+          {campaignData?.progress} / {campaignData?.total} reclamados
+        </p>
+        <progress
+          className="progress progress-primary w-full mt-4"
+          value={campaignData?.progress}
+          max={campaignData?.total}
+        ></progress>
+      </div>
 
-      {/* Mostramos los ganadores recientes si existen */}
-      {campaignData.recentWinners && campaignData.recentWinners.length > 0 && (
-        <div className="mt-6">
-          <h2 className="text-xl font-bold">Últimos Ganadores:</h2>
-          <ul className="list-disc pl-5 mt-2">
-            {campaignData.recentWinners.map((winner: any) => (
-              <li key={winner.tokenId}>@{winner.username}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <button className="btn btn-primary mt-8 w-full" onClick={handleClaim} disabled={isClaiming || !user}>
-        {isClaiming ? "Reclamando..." : "🎁 Reclamar mi NFT"}
-      </button>
-
-      {user && <p className="mt-4 text-sm text-center">Conectado como: @{user.username}</p>}
+      <div className="flex-shrink-0">
+        {mintedNFT ? (
+          <div className="flex flex-col items-center">
+            <h2 className="font-bold mb-4">¡Felicidades! Aquí está tu NFT:</h2>
+            <img src={mintedNFT.image} alt={mintedNFT.name} className="w-48 h-48 rounded-lg border-2 border-primary" />
+            <p className="mt-2 font-bold">{mintedNFT.name}</p>
+            <a
+              href={`https://sepolia.basescan.org/tx/${mintedNFT.transactionHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-secondary btn-outline w-full mt-4"
+            >
+              Ver en Basescan
+            </a>
+          </div>
+        ) : (
+          <button className="btn btn-primary btn-lg w-full" onClick={handleClaim} disabled={isClaiming || !user}>
+            {isClaiming ? "Reclamando..." : "🎁 Reclamar mi NFT"}
+          </button>
+        )}
+        {user && <p className="mt-4 text-xs text-gray-500">Conectado como: @{user.username}</p>}
+      </div>
     </div>
   );
 }
