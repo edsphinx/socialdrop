@@ -13,19 +13,24 @@
 
 ---
 
-## 1. El Problema: Los Airdrops Son Dinero Quemado
+## 1. El Problema: Los Airdrops Están Rotos
 
-En el mundo Web3, el "engagement" es la métrica más valiosa pero la más difícil de conseguir. Los airdrops, la herramienta de marketing por excelencia, están fundamentalmente rotos. Las marcas lanzan tokens a miles de wallets anónimas; los usuarios reclaman, venden inmediatamente el activo en un exchange y nunca más interactúan con el proyecto.
+En Web3, el engagement es el oxígeno que mantiene vivo a cualquier proyecto. Pero las herramientas más usadas *los airdrops* fallan de raíz.
 
-El resultado es un costo de adquisición de clientes altísimo con una retención cercana a cero. **Se atraen mercenarios, no una comunidad.**
+Las marcas reparten miles de tokens a wallets anónimas, los usuarios los reclaman, los venden y desaparecen. Nunca vuelven.
 
-## 2. Nuestra Solución: Recompensar el Engagement Real
+El resultado es dinero quemado, costo de adquisición de clientes altísimo con una retención cercana a cero. **Se atraen mercenarios, no una comunidad.**
 
-SocialDrop cambia las reglas del juego. En lugar de airdrops masivos e impersonales, permitimos a las marcas y creadores construir campañas de recompensas directamente dentro de **Farcaster**, la red social descentralizada.
+## 2. Nuestra Solución: Engagement Real, No Especulación
 
-La puerta de entrada no es un sitio web externo y torpe. Es una acción simple, social y nativa: **dar 'like' a una publicación (un 'cast')**.
+Con SocialDrop reescribimos las reglas.
 
-No solo distribuimos NFTs; creamos un **ciclo de engagement sostenible** donde las recompensas están ligadas a la influencia real, y los NFTs se convierten en **trofeos digitales vivientes** que reflejan el estatus del usuario dentro de la comunidad.
+Ya no se trata de repartir tokens al azar. En lugar de airdrops masivos e impersonales, permitimos a las marcas y creadores que puedan lanzar campañas directamente en **Farcaster**, la red social descentralizada, y convertir cada interacción en parte de una narrativa viva.
+
+La entrada es simple y nativa: dar 'like' a un cast.
+Pero la magia está en lo que sigue: No solo distribuimos NFTs; los NFTs que se reclaman en SocialDrop no son solo souvenirs, creamos un **ciclo de engagement sostenible** donde las recompensas están ligadas a la influencia real, y los NFTs se convierten en **trofeos digitales vivientes** que reflejan el estatus del usuario dentro de la comunidad.
+
+Un ciclo virtuoso donde la recompensa depende de la influencia real, no de la especulación rápida.
 
 ```mermaid
 graph TD
@@ -41,12 +46,13 @@ graph TD
 
 ## 3. La "Guerra de Influencia": Nuestro Diferenciador Clave
 
-El airdrop es solo el Nivel 1. Después, lanzamos la **"Guerra de Influencia"**: una competencia post-campaña donde los nuevos dueños de NFTs se convierten en los protagonistas.
+El airdrop es solo el Nivel 1, la chispa inicial. Después, llega la **"Guerra de Influencia"**: a arena donde los nuevos dueños de NFTs se convierten en gladiadores sociales.
 
-* **La Misión:** Cada participante crea su propio cast para promocionar la campaña.
+* **La Misión:** Cada participante crear y promocionar un cast propio para promocionar la campaña.
 * **La Métrica:** El éxito se mide en 'likes'. Gana el cast más influyente.
 * **El Escenario:** La competencia es pública y se sigue en un leaderboard en tiempo real dentro de nuestra Mini-App, directamente en Farcaster.
-* **La Recompensa:** Al alcanzar hitos de influencia, nuestro Smart Contract en Base **evoluciona el NFT del usuario**, cambiando su apariencia on-chain para siempre. El NFT pasa de ser un regalo a ser un **símbolo de estatus verificable**.
+* **La Recompensa:** Al alcanzar hitos de influencia, nuestro Smart Contract en Base **evoluciona el NFT del usuario**, cambiando su apariencia on-chain para siempre. 
+El NFT pasa de ser un regalo a ser un **símbolo de estatus verificable**.
 
 ---
 
@@ -96,7 +102,11 @@ graph TD
 
 ## 6. Modelo de Negocio y Sostenibilidad
 
-SocialDrop es sostenible a través de un **modelo de fees simple** para los creadores de campañas, basado en la escala del airdrop (cantidad de NFTs). La viralidad integrada de la "Guerra de Influencia" justifica el valor de nuestra plataforma para las marcas, creando un camino claro hacia la rentabilidad.
+SocialDrop cobra un **fee simple** por campaña, basado en la escala del airdrop.
+
+La diferencia está en que no ofrecemos tokens gratis; ofrecemos eventos sociales memorables, impulsados por competencia, hype y evolución on-chain.
+
+La viralidad de la “Guerra de Influencia” multiplica el valor para las marcas y garantiza un camino claro hacia la sostenibilidad.
 
 ## 7. Plan de Crecimiento (Uso del Premio)
 
