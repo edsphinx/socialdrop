@@ -48,7 +48,11 @@ export default function HomePage() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 flex-grow">
-        <Link href="/c/15" passHref className="card bg-base-100 shadow-xl hover:bg-primary transition-all duration-200">
+        <Link
+          href="/claims"
+          passHref
+          className="card bg-base-100 shadow-xl hover:bg-primary transition-all duration-200"
+        >
           <div className="card-body justify-center items-center">
             <GiftIcon className="h-12 w-12" />
             <h2 className="card-title text-center">Reclamar NFT</h2>
