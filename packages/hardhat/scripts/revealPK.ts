@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 import { Wallet } from "ethers";
-// import password from "@inquirer/password";
+import password from "@inquirer/password";
 
 async function main() {
   const encryptedKey = process.env.DEPLOYER_PRIVATE_KEY_ENCRYPTED;
@@ -13,7 +13,7 @@ async function main() {
 
   console.log("👀 This will reveal your private key on the console.\n");
 
-  const pass = process.env.DEPLOYER_PRIVATE_KEY_PASSWORD; //await password({ message: "Enter your password to decrypt the private key:" });
+  const pass = await password({ message: "Enter your password to decrypt the private key:" });
 
   if (!pass) {
     console.log("⚠️ Make sure to remember your password! You'll need it to decrypt the private key.");

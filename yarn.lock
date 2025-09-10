@@ -3337,9 +3337,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@prisma/client@npm:6.15.0":
-  version: 6.15.0
-  resolution: "@prisma/client@npm:6.15.0"
+"@prisma/client@npm:latest":
+  version: 6.16.0
+  resolution: "@prisma/client@npm:6.16.0"
   peerDependencies:
     prisma: "*"
     typescript: ">=5.1.0"
@@ -3348,7 +3348,7 @@ __metadata:
       optional: true
     typescript:
       optional: true
-  checksum: c8d1b56185b7ccadc58409858d3a13f5628f656ea17ce7e7606153537fc6fa3984d3f388c69f42f36ec5d6f1711249da2a97c84210e44e4fe4957742f0055a42
+  checksum: db69e23927907d7f4a1787160e18b4a2774bdf53019f28490d5f85364a64bdc65b27907c04d778265344c91570ab430b2a837ca491ce0859773f27ba96b4099f
   languageName: node
   linkType: hard
 
@@ -3833,7 +3833,7 @@ __metadata:
   dependencies:
     "@farcaster/miniapp-sdk": ^0.1.10
     "@heroicons/react": ~2.1.5
-    "@prisma/client": 6.15.0
+    "@prisma/client": latest
     "@rainbow-me/rainbowkit": 2.2.8
     "@tailwindcss/postcss": 4.0.15
     "@tanstack/react-query": ~5.59.15
@@ -3842,6 +3842,7 @@ __metadata:
     "@types/react": ~19.0.7
     "@uniswap/sdk-core": ~5.8.2
     "@uniswap/v2-sdk": ~4.6.1
+    "@xmtp/node-sdk": ^4.1.0
     abitype: 1.0.6
     autoprefixer: ~10.4.20
     bgipfs: ~0.0.12
@@ -3863,6 +3864,7 @@ __metadata:
     react: ~19.0.0
     react-dom: ~19.0.0
     react-hot-toast: ~2.4.0
+    react-range-slider-input: ^3.2.1
     tailwindcss: 4.1.3
     type-fest: ~4.26.1
     typescript: ~5.8.2
@@ -6026,6 +6028,65 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@xmtp/content-type-group-updated@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "@xmtp/content-type-group-updated@npm:2.0.2"
+  dependencies:
+    "@xmtp/content-type-primitives": ^2.0.2
+    "@xmtp/proto": ^3.78.0
+  checksum: 88ffce220ab1b1112e002d39e85ed8493629c354587732fd17a39e6757abe94d3390c4f183f683f0360888ae94fcafe9bdf422920d7fd28baf15aa9c3cdb6330
+  languageName: node
+  linkType: hard
+
+"@xmtp/content-type-primitives@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "@xmtp/content-type-primitives@npm:2.0.2"
+  dependencies:
+    "@xmtp/proto": ^3.78.0
+  checksum: 4e3581ef9e23864bf741705d6011613c6c0b2670b7431f55033769514f0879ff4573d1b442a858cbdd4ee1e493d6fe070ebe8cbd9577a505cd89d2d89e085f97
+  languageName: node
+  linkType: hard
+
+"@xmtp/content-type-text@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "@xmtp/content-type-text@npm:2.0.2"
+  dependencies:
+    "@xmtp/content-type-primitives": ^2.0.2
+  checksum: 8443ca0c19f95382fdd7345cc8b810f9d1476b206aaec8dbedd1ae36a0e7d997e25d04de6616e8779bf14d8de59a8aa8658ca29014dc0bf71f354069d4d4c959
+  languageName: node
+  linkType: hard
+
+"@xmtp/node-bindings@npm:1.4.0":
+  version: 1.4.0
+  resolution: "@xmtp/node-bindings@npm:1.4.0"
+  checksum: 1e4d36f35ddfa714ac393c6337998d127debd6477285a569470427ee19a4dd4c5cbf8cb26c5a65ebbb555880b8d0ac8725f027f6b06642654ab56cb9c60f61de
+  languageName: node
+  linkType: hard
+
+"@xmtp/node-sdk@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "@xmtp/node-sdk@npm:4.1.0"
+  dependencies:
+    "@xmtp/content-type-group-updated": ^2.0.2
+    "@xmtp/content-type-primitives": ^2.0.2
+    "@xmtp/content-type-text": ^2.0.2
+    "@xmtp/node-bindings": 1.4.0
+  checksum: 09c58cad677ebb929135bd045da8bb0be77003c3abe996860c2c3c7c777cd63f170c9a89897d17a98dd3661e818b7291d7c5da464df038a0f76658d4285dad74
+  languageName: node
+  linkType: hard
+
+"@xmtp/proto@npm:^3.78.0":
+  version: 3.86.0
+  resolution: "@xmtp/proto@npm:3.86.0"
+  dependencies:
+    long: ^5.2.0
+    protobufjs: ^7.0.0
+    rxjs: ^7.8.0
+    undici: ^5.8.1
+  checksum: 8c17d905f4a63fa3d86057693516cc8080b03f332913f9646712048303d02e1df7873e6030c4e46d9c5bdf4f2d9b7720fbb800f4dab0db2be60ae976648ea93d
+  languageName: node
+  linkType: hard
+
 "abbrev@npm:1":
   version: 1.1.1
   resolution: "abbrev@npm:1.1.1"
@@ -7623,7 +7684,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"clsx@npm:1.2.1, clsx@npm:^1.2.1":
+"clsx@npm:1.2.1, clsx@npm:^1.1.1, clsx@npm:^1.2.1":
   version: 1.2.1
   resolution: "clsx@npm:1.2.1"
   checksum: 30befca8019b2eb7dbad38cff6266cf543091dae2825c856a62a8ccf2c3ab9c2907c4d12b288b73101196767f66812365400a227581484a05f968b0307cfaf12
@@ -7894,6 +7955,13 @@ __metadata:
   version: 0.4.2
   resolution: "cookie@npm:0.4.2"
   checksum: a00833c998bedf8e787b4c342defe5fa419abd96b32f4464f718b91022586b8f1bafbddd499288e75c037642493c83083da426c6a9080d309e3bd90fd11baa9b
+  languageName: node
+  linkType: hard
+
+"core-js@npm:^3.22.4":
+  version: 3.45.1
+  resolution: "core-js@npm:3.45.1"
+  checksum: 674c79e9c58ed923280cd4afbc3bc4c921b8b11bce70d269f1bd98db484e27f0ff436d1de34e198f27065a10386761b39f110309c471f329fe7376ab0fb32bf6
   languageName: node
   linkType: hard
 
@@ -13145,7 +13213,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"long@npm:^5.0.0":
+"long@npm:^5.0.0, long@npm:^5.2.0":
   version: 5.3.2
   resolution: "long@npm:5.3.2"
   checksum: be215816b563f4ca27ad3677678b53415bc489f9e3466414e54d2d85f5f8e86768547fa58493bacfb363ffc57a664debc83403ccc2178aef0c40aca28bad47c9
@@ -15482,7 +15550,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"protobufjs@npm:^7.1.2":
+"protobufjs@npm:^7.0.0, protobufjs@npm:^7.1.2":
   version: 7.5.4
   resolution: "protobufjs@npm:7.5.4"
   dependencies:
@@ -15753,6 +15821,16 @@ __metadata:
   dependencies:
     p-defer: ^3.0.0
   checksum: f10f435060551c470711ba0b3663e3d49c7701aae84ea645d66992d756b13e923fb5762b324d3583d85c1c0def4138b9cc3f686bab1c1bc10d3ad82dc7175c99
+  languageName: node
+  linkType: hard
+
+"react-range-slider-input@npm:^3.2.1":
+  version: 3.2.1
+  resolution: "react-range-slider-input@npm:3.2.1"
+  dependencies:
+    clsx: ^1.1.1
+    core-js: ^3.22.4
+  checksum: 25e86452481b7e0e264f72f404cc2896ad4611acce250bb803f5b9f4c6b557de3564e99a785009facc5ca8204b43d7c1e9addbe1c4a31b6217b4f7159a8d0f5e
   languageName: node
   linkType: hard
 
@@ -18229,7 +18307,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:^5.14.0":
+"undici@npm:^5.14.0, undici@npm:^5.8.1":
   version: 5.29.0
   resolution: "undici@npm:5.29.0"
   dependencies:

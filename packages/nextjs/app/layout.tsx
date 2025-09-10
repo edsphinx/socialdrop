@@ -3,20 +3,8 @@ import { ScaffoldEthAppWithProviders } from "~~/components/ScaffoldEthAppWithPro
 import "~~/styles/globals.css";
 
 export const metadata: Metadata = {
-  title: "SocialDrop - Airdrops Virales en Farcaster",
-  description: "Convierte las interacciones en Farcaster en NFTs evolutivos y recompensa a tu comunidad.",
-
-  openGraph: {
-    title: "SocialDrop - Airdrops Virales en Farcaster",
-    description: "Lanza una campaña en menos de 60 segundos y haz crecer tu proyecto.",
-    images: ["https://socialdrop.live/og-image.png"],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "SocialDrop - Airdrops Virales en Farcaster",
-    description: "Lanza una campaña en menos de 60 segundos y haz crecer tu proyecto.",
-    images: ["https://socialdrop.live/og-image.png"],
-  },
+  title: "SocialDrop",
+  description: "Retos y airdrops de NFTs evolutivos en Farcaster",
 };
 
 const miniAppConfig = {
