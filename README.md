@@ -37,6 +37,7 @@ graph TD
         E --> F[6. Se genera Más<br>Visibilidad para la Marca];
         F -.-> A;
     end
+```
 
 ## 3. La "Guerra de Influencia": Nuestro Diferenciador Clave
 
@@ -74,6 +75,7 @@ graph TD
     B -- Lógica de Negocio --> C;
     B -- Transacciones (Mint/Evolve) --> D;
     B -- Verificación de Datos --> E;
+```
 
 * **Frontend (`Next.js App Router`):** Usamos `scaffold-eth-2` y `wagmi` para una experiencia de usuario rápida y robusta. La separación de Componentes de Servidor y Cliente con `Suspense` garantiza una carga óptima.
 * **Backend (`Next.js API Routes`):** Desplegado en Vercel, nos proporciona una infraestructura serverless que escala automáticamente.
@@ -128,6 +130,7 @@ yarn deploy
 
 # 4. Iniciar la aplicación de Next.js
 yarn start
+```
 
 > **Prerrequisitos:** Node.js v20.19.3+, Yarn 3+.
 
