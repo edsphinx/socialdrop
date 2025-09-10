@@ -1,3 +1,33 @@
+// packages/nextjs/app/api/ai-suggestion/route.ts
+import { NextRequest, NextResponse } from "next/server";
+
+// Una lista de respuestas de IA realistas que podemos usar
+const AI_SUGGESTIONS = [
+  "¡Claro! Consejo 1: Haz una pregunta abierta como '¿Están listos?' para incentivar comentarios. Consejo 2: Menciona un canal relevante como /base para aumentar la visibilidad. Consejo 3: Crea urgencia con frases como 'Solo los primeros 100...'",
+  "Buena idea. Para hacerlo más viral, intenta esto: 1. Etiqueta a 2 influencers del ecosistema de Base y pídeles su opinión. 2. Ofrece un bonus sorpresa para el comentario con más 'me gusta'. 3. Usa un emoji llamativo al principio del cast.",
+  "Para maximizar el impacto de tu campaña: 1. Publica en el horario de mayor actividad de Farcaster (tarde/noche en América). 2. Haz que la imagen del NFT sea intrigante y de alta calidad. 3. Promete revelar un 'secreto' o beneficio adicional a los que reclamen el NFT.",
+];
+
+export async function POST(request: NextRequest) {
+  try {
+    // Leemos los datos del frontend, aunque no los usaremos para la respuesta
+    const { castContent, campaignName } = await request.json();
+    console.log(`[Simulación IA] Recibida petición para la campaña: ${campaignName}`);
+    console.log(`[Simulación IA] contenido del cast: ${castContent}`);
+
+    // Simulamos una espera de 2 a 4 segundos para que parezca real
+    const delay = Math.random() * 2000 + 2000;
+    await new Promise(resolve => setTimeout(resolve, delay));
+
+    // Elegimos una de las respuestas pre-escritas al azar
+    const suggestion = AI_SUGGESTIONS[Math.floor(Math.random() * AI_SUGGESTIONS.length)];
+
+    return NextResponse.json({ suggestion: suggestion });
+  } catch (error) {
+    console.error("Error en la API de IA simulada:", error);
+    return NextResponse.json({ error: "No se pudo comunicar con el agente de IA." }, { status: 500 });
+  }
+}
 // import { NextRequest, NextResponse } from "next/server";
 // import { Client, SortDirection } from "@xmtp/xmtp-js";
 // import { Wallet } from "ethers";
