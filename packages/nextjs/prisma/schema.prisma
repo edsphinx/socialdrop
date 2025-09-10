@@ -21,6 +21,10 @@ model campaigns {
   max_mints         Int      @default(100)
   created_at        DateTime @default(now())
 
+  nft_image_url_level_1 String
+  nft_image_url_level_2 String?
+  nft_image_url_level_3 String?
+
   is_active         Boolean  @default(true)
   creator_fid       Int? // Opcional, para saber quién la creó
 
