@@ -31,14 +31,14 @@ export default function HomePage() {
     return <div className="p-4 text-center text-white">Conectando con Farcaster...</div>;
   }
 
-  // if (!user) {
-  //   return (
-  //     <div className="p-8 text-center text-white">
-  //       <h1 className="text-4xl font-bold">Bienvenido a SocialDrop</h1>
-  //       <p className="mt-4">Para usar la app, por favor accede a través de un enlace de campaña en Farcaster.</p>
-  //     </div>
-  //   );
-  // }
+  if (!user) {
+    return (
+      <div className="p-8 text-center text-white">
+        <h1 className="text-4xl font-bold">Bienvenido a SocialDrop</h1>
+        <p className="mt-4">Para usar la app, por favor accede a través de un enlace de campaña en Farcaster.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen p-6 bg-base-300">

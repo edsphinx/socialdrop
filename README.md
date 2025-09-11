@@ -108,21 +108,15 @@ La diferencia está en que no ofrecemos tokens gratis; ofrecemos eventos sociale
 
 La viralidad de la “Guerra de Influencia” multiplica el valor para las marcas y garantiza un camino claro hacia la sostenibilidad.
 
-## 7. Plan de Crecimiento (Uso del Premio)
+## 7. Incentivos y Recompensas
 
-Hemos diseñado un plan de inversión modular que se adapta al capital que recibamos.
+Para fomentar la participación activa de la comunidad, SocialDrop integrará un sistema de recompensas flexible:
 
-#### **Prioridad #1: La Chispa (≥ $150 USDC)**
-* **Inversión:** 6 meses de suscripción al plan "Standard" de Neynar (~$150).
-* **Resultado:** Desbloquear **webhooks** para implementar el "Airdrop Mágico" con minting 100% automático.
+- **Recompensas sociales:** usuarios podrán obtener reconocimiento dentro de la app por su participación (badges, menciones destacadas, ranking comunitario).  
+- **Drops dinámicos:** integración con tokens o coleccionables digitales (NFTs, POAPs) en campañas específicas.  
+- **Experiencias exclusivas:** acceso anticipado a ciertas funciones, contenido premium o participación en comunidades cerradas.  
 
-#### **Prioridad #2: Impulso Comunitario (≥ $400 USDC)**
-* **Inversión:** Lo anterior + $250 para subsidiar costos de gas.
-* **Resultado:** Cubrir las **primeras 5,000 transacciones** de la plataforma, eliminando la fricción de entrada.
-
-#### **Prioridad #3: Crecimiento Acelerado (1er Lugar - $700 USDC)**
-* **Inversión:** Todo lo anterior + $300 adicionales.
-* **Resultado:** Asegurar **un año completo de API de Neynar** y lanzar un **Fondo Comunitario de $150** para micro-recompensas.
+El enfoque está en que las recompensas sean **sostenibles, escalables y adaptables** según la evolución del proyecto y las alianzas que se generen.
 
 ## 8. 🔨 Quick Start (Desarrollo Local)
 
