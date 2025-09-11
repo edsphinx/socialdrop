@@ -1,28 +1,31 @@
-import { type Chain, createPublicClient, createWalletClient, decodeEventLog, http, publicActions } from "viem";
+import { createPublicClient, createWalletClient, decodeEventLog, http, publicActions } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { baseSepolia, hardhat } from "viem/chains";
+import { baseSepolia } from "viem/chains";
 import deployedContracts from "~~/contracts/deployedContracts";
 
-let chain: Chain;
-let transport: any;
+// let chain: Chain;
+// let transport: any;
 
-if (process.env.NODE_ENV === "production") {
-  // --- PRODUCCIÓN (Vercel) ---
-  chain = baseSepolia;
-  if (!process.env.BASE_SEPOLIA_RPC_URL) {
-    throw new Error("BASE_SEPOLIA_RPC_URL is not set in .env for production");
-  }
-  transport = http(process.env.BASE_SEPOLIA_RPC_URL);
-  console.log("[Viem Service] Usando la red de producción: Base Sepolia");
-} else {
-  // --- DESARROLLO (Local) ---
-  chain = hardhat;
-  transport = http(); // http() sin argumentos apunta a http://127.0.0.1:8545
-  console.log("[Viem Service] Usando la red de desarrollo: Hardhat Local");
-}
+// if (process.env.NODE_ENV === "production") {
+//   // --- PRODUCCIÓN (Vercel) ---
+//   chain = baseSepolia;
+//   if (!process.env.BASE_SEPOLIA_RPC_URL) {
+//     throw new Error("BASE_SEPOLIA_RPC_URL is not set in .env for production");
+//   }
+//   transport = http(process.env.BASE_SEPOLIA_RPC_URL);
+//   console.log("[Viem Service] Usando la red de producción: Base Sepolia");
+// } else {
+//   // --- DESARROLLO (Local) ---
+//   chain = hardhat;
+//   transport = http(); // http() sin argumentos apunta a http://127.0.0.1:8545
+//   console.log("[Viem Service] Usando la red de desarrollo: Hardhat Local");
+// }
 
+const chain = baseSepolia;
 const chainId = chain.id;
+const transport = http(process.env.BASE_SEPOLIA_RPC_URL);
 const contractData = deployedContracts[chainId as keyof typeof deployedContracts]?.EvolvingNFT;
+console.log("[Viem Service] Usando la red de desarrollo: Base Sepolia", chain);
 
 if (!contractData) {
   throw new Error(`Contrato EvolvingNFT no encontrado en la chainId ${chainId}. Asegúrate de haberlo desplegado.`);

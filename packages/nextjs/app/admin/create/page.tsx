@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import RangeSlider from "react-range-slider-input";
 import "react-range-slider-input/dist/style.css";
 import { formatEther, parseEther } from "viem";
-import { useAccount, useBalance } from "wagmi";
+import { useAccount, useBalance, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { useFarcaster } from "~~/hooks/useFarcaster";
 
 // --- Tipos de Datos Locales para Claridad ---
@@ -87,9 +88,11 @@ export default function CreateCampaignPage() {
   const { user, isLoading: isUserLoading } = useFarcaster();
   const { address } = useAccount();
   const { data: balance } = useBalance({ address: address as `0x${string}` | undefined });
+  const router = useRouter();
 
   const [campaignName, setCampaignName] = useState("");
   const [castContent, setCastContent] = useState("");
+  const [nftImageUrl, setNftImageUrl] = useState("");
   const [nftCount, setNftCount] = useState(100);
   const [fee, setFee] = useState(0.01);
   const [isLoading, setIsLoading] = useState(false);
@@ -97,60 +100,47 @@ export default function CreateCampaignPage() {
   const [suggestion, setSuggestion] = useState("");
   const [isSuggestionLoading, setIsSuggestionLoading] = useState(false);
 
+  const { data: txHash, sendTransactionAsync } = useSendTransaction();
+  const { isLoading: isConfirming } = useWaitForTransactionReceipt({ hash: txHash });
+
   useEffect(() => {
     const calculatedFee = nftCount * FEE_PER_NFT;
     setFee(Number(calculatedFee.toFixed(4)));
   }, [nftCount]);
 
   const handleCreateCampaign = async () => {
-    // 1. Validaciones del formulario
-    if (!user?.fid) {
-      toast.error("Usuario de Farcaster no detectado o inválido.");
-      return;
-    }
-    if (!campaignName.trim()) {
-      toast.error("Por favor, dale un nombre a tu campaña.");
-      return;
-    }
-    if (!castContent.trim()) {
-      toast.error("El contenido del cast de anuncio no puede estar vacío.");
-      return;
-    }
-    if (!hasSufficientBalance) {
-      toast.error("No tienes saldo suficiente para pagar el fee.");
-      return;
-    }
+    // --- PASO 1: VALIDACIONES ---
+    // (sin cambios, tu lógica es perfecta)
+    if (!user?.fid) return toast.error("Usuario de Farcaster no detectado.");
+    if (!campaignName.trim()) return toast.error("Por favor, dale un nombre a tu campaña.");
+    if (!castContent.trim()) return toast.error("El contenido del cast no puede estar vacío.");
+    if (!nftImageUrl.trim()) return toast.error("Por favor, proporciona la URL de la imagen para el NFT.");
+    if (!hasSufficientBalance) return toast.error("No tienes saldo suficiente para pagar el fee.");
 
     setIsLoading(true);
+    const toastId = toast.loading("Esperando firma de la transacción...");
 
     try {
-      // 2. Lógica para crear la campaña en el backend
-      const campaignData = {
-        name: campaignName,
-        castContent: castContent,
-        nftCount: nftCount,
-        fee: fee,
-        creatorFid: user.fid,
-      };
+      // --- PASO 2: PAGO ON-CHAIN ---
+      // Se inicia la transacción de pago. El usuario debe firmarla en su wallet.
+      // Esto es asíncrono. No esperamos a que se confirme aquí, solo a que se envíe.
+      await sendTransactionAsync({
+        to: process.env.DEPLOYER_ADDRESS,
+        value: parseEther(fee.toString()),
+      });
 
-      // Simulación de llamada a la API
-      // TODO: Reemplazar con una llamada real a `fetch('/api/campaigns/create', ...)`
-      console.log("Enviando al backend:", campaignData);
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simula la espera de la red
-
-      // 3. Lógica para publicar el cast en Farcaster
-      // TODO: Implementar la llamada a `publishCast` del hook `useFarcaster`
-      console.log("Publicando en Farcaster:", castContent);
-
-      toast.success(`Campaña "${campaignName}" creada y publicada exitosamente!`);
-
-      // Opcional: Limpiar el formulario o redirigir
-      setCampaignName("");
-      setCastContent("");
-    } catch (error) {
-      console.error("Error al crear la campaña:", error);
-      toast.error(error instanceof Error ? error.message : "Ocurrió un error inesperado.");
-    } finally {
+      // La función termina aquí. El resto de la lógica la maneja el `useEffect` de abajo,
+      // que está "escuchando" a que esta transacción se confirme.
+      toast.loading("Procesando pago... El hash de la transacción se generará en breve.", { id: toastId });
+    } catch (error: any) {
+      // Manejo de errores si el usuario rechaza la firma o hay un problema con la wallet.
+      toast.dismiss(toastId);
+      if (error.message.includes("User rejected the request")) {
+        toast.error("Transacción rechazada por el usuario.");
+      } else {
+        console.error("Error en la transacción de pago:", error);
+        toast.error("Falló la transacción de pago.");
+      }
       setIsLoading(false);
     }
   };
@@ -197,6 +187,39 @@ export default function CreateCampaignPage() {
     //   setIsSuggestionLoading(false);
     // }
   };
+
+  // 4. EFECTO QUE REACCIONA A LA CONFIRMACIÓN DE LA TRANSACCIÓN
+  useEffect(() => {
+    if (isConfirming) {
+      toast.loading("Pago procesado. Creando campaña en el backend...", { id: "campaign-creation" });
+    }
+    if (txHash && !isConfirming) {
+      // La transacción ha sido confirmada, ahora llamamos a nuestro backend
+      const createCampaignInBackend = async () => {
+        try {
+          const campaignData = { name: campaignName, castContent, nftCount, creatorFid: user!.fid, nftImageUrl };
+          const response = await fetch("/api/campaign", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(campaignData),
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.message);
+
+          toast.dismiss("campaign-creation");
+          toast.success(`¡Campaña "${campaignName}" creada y publicada!`);
+          router.push("/admin"); // Redirigimos al dashboard
+        } catch (error: any) {
+          toast.dismiss("campaign-creation");
+          toast.error(`Error al crear la campaña: ${error.message}`);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      createCampaignInBackend();
+    }
+  }, [txHash, isConfirming]);
 
   const currentIndex = QUANTITY_STOPS.findIndex(stop => stop >= nftCount);
   const handleSliderChange = (value: [number, number]) => {
@@ -266,6 +289,19 @@ export default function CreateCampaignPage() {
               </div>
             </div>
 
+            <div className="form-control mt-4">
+              <label className="label">
+                <span className="label-text text-lg">URL de la Imagen del NFT (Nivel 1)</span>
+              </label>
+              <input
+                type="text"
+                placeholder="ipfs://..."
+                className="input input-bordered w-full text-base"
+                value={nftImageUrl}
+                onChange={e => setNftImageUrl(e.target.value)}
+              />
+            </div>
+
             {/* Contenedor para la Sugerencia de IA */}
             {(isSuggestionLoading || suggestion) && (
               <div className="mt-4 p-4 bg-base-200 rounded-lg">
@@ -326,6 +362,7 @@ export default function CreateCampaignPage() {
                   Tu Saldo: {parseFloat(formatEther(balance.value)).toFixed(4)} {balance.symbol}
                 </p>
               )}
+
               <div className="card-actions justify-center mt-6">
                 <button
                   className="btn btn-primary btn-lg w-full md:w-auto"
@@ -342,7 +379,6 @@ export default function CreateCampaignPage() {
           </div>
         </div>
 
-        {/* --- Columna 2: Vista Previa --- */}
         <div className="hidden md:block">
           <CampaignPreviewCard user={user} castContent={castContent} nftCount={nftCount} />
         </div>
