@@ -1,18 +1,29 @@
 import { NextResponse } from "next/server";
+import { validateAndParseNeynarWebhook, validateWebhookDataStructure } from "~~/lib/webhook-validator";
 import * as blockchain from "~~/services/blockchain.service";
+import * as campaignCompletion from "~~/services/campaign-completion.service";
 import * as db from "~~/services/database.service";
 import * as neynar from "~~/services/neynar.service";
 
 export async function POST(request: Request) {
   try {
-    const webhookData = await request.json();
-    // Usamos optional chaining para evitar errores si la estructura no es la esperada
-    const userFid = webhookData?.data?.fid;
-    const castHash = webhookData?.data?.cast?.hash;
+    // 1. Validar firma del webhook y parsear el body
+    const webhookData = await validateAndParseNeynarWebhook(request);
 
-    if (!userFid || !castHash) {
+    if (!webhookData) {
+      console.warn("[Webhook] Invalid webhook signature or parsing failed");
+      return NextResponse.json({ message: "Invalid webhook signature" }, { status: 401 });
+    }
+
+    // 2. Validar estructura del webhook data
+    if (!validateWebhookDataStructure(webhookData)) {
+      console.warn("[Webhook] Invalid webhook data structure");
       return NextResponse.json({ message: "Datos de webhook inválidos." }, { status: 400 });
     }
+
+    // 3. Extraer datos validados
+    const userFid = webhookData.data.fid;
+    const castHash = webhookData.data.cast.hash;
 
     console.log(`Controlador: Procesando like del FID ${userFid} al cast ${castHash}`);
 
@@ -41,7 +52,15 @@ export async function POST(request: Request) {
     const mintCount = await db.getMintCount(campaign.id);
     if (mintCount >= campaign.max_mints) {
       console.log(`Controlador: La campaña "${campaign.name}" ha alcanzado su límite de mints.`);
-      // TODO: Llamar a una función para anunciar que la campaña ha finalizado.
+
+      // Finalizar la campaña y publicar anuncio
+      try {
+        await campaignCompletion.completeCampaign(campaign.id);
+      } catch (error) {
+        console.error("Error completando la campaña:", error);
+        // Continuamos aunque falle el anuncio
+      }
+
       return NextResponse.json({ message: "La campaña ha finalizado." }, { status: 200 });
     }
 
