@@ -1,4 +1,5 @@
 import { personalNeynarClient, readOnlyNeynarClient } from "~~/lib/clients/neynar";
+import { castLikesCache, userDataCache } from "./cache.service";
 
 interface CastOptions {
   embeds?: { url: string }[];
@@ -31,37 +32,40 @@ export async function getWalletFromFid(fid: number): Promise<string | null> {
  * @returns Un objeto con la dirección de la wallet y el nombre de usuario, o null si no se encuentra.
  */
 export async function getUserDataFromFid(fid: number): Promise<{ address: string; username: string } | null> {
-  try {
-    console.log(`[Neynar Service] Buscando datos para el FID: ${fid}`);
-    const userResponse = await personalNeynarClient.fetchBulkUsers({ fids: [fid] });
-    const user = userResponse.users[0];
+  // Intentar obtener del cache primero
+  return userDataCache.getOrSet(fid.toString(), async () => {
+    try {
+      console.log(`[Neynar Service] Buscando datos para el FID: ${fid}`);
+      const userResponse = await personalNeynarClient.fetchBulkUsers({ fids: [fid] });
+      const user = userResponse.users[0];
 
-    if (!user) {
-      console.warn(`[Neynar Service] No se encontró usuario para el FID: ${fid}`);
+      if (!user) {
+        console.warn(`[Neynar Service] No se encontró usuario para el FID: ${fid}`);
+        return null;
+      }
+
+      // Lógica para seleccionar la wallet
+      let address = user.verified_addresses?.eth_addresses?.[0];
+      if (!address) {
+        address = user.custody_address;
+      }
+
+      // Si no encontramos una dirección de wallet, no podemos continuar.
+      if (!address) {
+        console.warn(`[Neynar Service] No se encontró wallet para el FID: ${fid}`);
+        return null;
+      }
+
+      // Devolvemos el objeto completo con los datos que necesitamos.
+      return {
+        address,
+        username: user.username,
+      };
+    } catch (error) {
+      console.error("[Neynar Service] Error al obtener datos del usuario:", error);
       return null;
     }
-
-    // Lógica para seleccionar la wallet
-    let address = user.verified_addresses?.eth_addresses?.[0];
-    if (!address) {
-      address = user.custody_address;
-    }
-
-    // Si no encontramos una dirección de wallet, no podemos continuar.
-    if (!address) {
-      console.warn(`[Neynar Service] No se encontró wallet para el FID: ${fid}`);
-      return null;
-    }
-
-    // Devolvemos el objeto completo con los datos que necesitamos.
-    return {
-      address,
-      username: user.username,
-    };
-  } catch (error) {
-    console.error("[Neynar Service] Error al obtener datos del usuario:", error);
-    return null;
-  }
+  });
 }
 
 export async function didUserLikeCast(fid: number, castHash: string): Promise<boolean> {
@@ -144,41 +148,48 @@ export async function getCastLikesCountSDK(castHash: string) {
  * @returns {Promise<number>} El número total de likes.
  */
 export async function getCastLikesCount(castHash: string): Promise<number> {
-  const apiKey = process.env.NEYNAR_API_KEY_PERSONAL;
-  if (!apiKey) {
-    console.error("[Neynar Service] La API key de lectura no está configurada.");
-    return 0;
-  }
+  // Cache de 1 minuto para likes count (se actualiza frecuentemente)
+  return castLikesCache.getOrSet(
+    castHash,
+    async () => {
+      const apiKey = process.env.NEYNAR_API_KEY_PERSONAL;
+      if (!apiKey) {
+        console.error("[Neynar Service] La API key de lectura no está configurada.");
+        return 0;
+      }
 
-  const url = `https://api.neynar.com/v2/farcaster/cast?type=hash&identifier=${castHash}`;
+      const url = `https://api.neynar.com/v2/farcaster/cast?type=hash&identifier=${castHash}`;
 
-  const options = {
-    method: "GET",
-    headers: {
-      accept: "application/json",
-      api_key: apiKey,
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          api_key: apiKey,
+        },
+      };
+
+      try {
+        console.log(`[Neynar Service] Obteniendo conteo de likes para ${castHash} (vía fetch directo)`);
+
+        const response = await fetch(url, options);
+
+        if (!response.ok) {
+          throw new Error(`La API de Neynar respondió con el estado: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const likesCount = data.cast?.reactions?.likes_count;
+
+        if (typeof likesCount === "number") {
+          return likesCount;
+        }
+
+        return 0;
+      } catch (error) {
+        console.error(`[Neynar Service] Error al obtener el conteo de likes para ${castHash}:`, error);
+        return 0;
+      }
     },
-  };
-
-  try {
-    console.log(`[Neynar Service] Obteniendo conteo de likes para ${castHash} (vía fetch directo)`);
-
-    const response = await fetch(url, options);
-
-    if (!response.ok) {
-      throw new Error(`La API de Neynar respondió con el estado: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const likesCount = data.cast?.reactions?.likes_count;
-
-    if (typeof likesCount === "number") {
-      return likesCount;
-    }
-
-    return 0;
-  } catch (error) {
-    console.error(`[Neynar Service] Error al obtener el conteo de likes para ${castHash}:`, error);
-    return 0;
-  }
+    60 * 1000,
+  ); // TTL de 1 minuto
 }

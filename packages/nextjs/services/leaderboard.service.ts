@@ -1,4 +1,5 @@
 import prisma from "~~/lib/clients/prisma";
+import { leaderboardCache } from "./cache.service";
 import * as neynar from "./neynar.service";
 
 export interface LeaderboardEntry {
@@ -35,15 +36,19 @@ export interface LeaderboardResponse {
  * @returns Leaderboard completo con paginación
  */
 export async function getLeaderboard(campaignId: number, page: number = 1, limit: number = 10): Promise<LeaderboardResponse | null> {
-  try {
-    // Validar parámetros
-    if (page < 1) page = 1;
-    if (limit < 1) limit = 10;
-    if (limit > 100) limit = 100; // Máximo 100 por página
+  // Cachear cada página del leaderboard por 30 segundos
+  const cacheKey = `campaign:${campaignId}:page:${page}:limit:${limit}`;
 
-    const offset = (page - 1) * limit;
+  return leaderboardCache.getOrSet(cacheKey, async () => {
+    try {
+      // Validar parámetros
+      if (page < 1) page = 1;
+      if (limit < 1) limit = 10;
+      if (limit > 100) limit = 100; // Máximo 100 por página
 
-    console.log(`[Leaderboard Service] Obteniendo leaderboard para campaña ${campaignId}, página ${page}`);
+      const offset = (page - 1) * limit;
+
+      console.log(`[Leaderboard Service] Obteniendo leaderboard para campaña ${campaignId}, página ${page}`);
 
     // 1. Obtener información de la campaña
     const campaign = await prisma.campaigns.findUnique({
@@ -130,10 +135,11 @@ export async function getLeaderboard(campaignId: number, page: number = 1, limit
         hasMore: offset + limit < totalParticipants,
       },
     };
-  } catch (error) {
-    console.error(`[Leaderboard Service] Error obteniendo leaderboard para campaña ${campaignId}:`, error);
-    throw error;
-  }
+    } catch (error) {
+      console.error(`[Leaderboard Service] Error obteniendo leaderboard para campaña ${campaignId}:`, error);
+      throw error;
+    }
+  });
 }
 
 /**

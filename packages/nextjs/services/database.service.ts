@@ -1,8 +1,12 @@
 import prisma from "~~/lib/clients/prisma";
+import { campaignsCache } from "./cache.service";
 
 export async function findCampaignByCastHash(castHash: string) {
-  return await prisma.campaigns.findUnique({
-    where: { target_cast_hash: castHash },
+  // Cachear búsquedas por cast hash (muy frecuentes en webhooks)
+  return campaignsCache.getOrSet(`hash:${castHash}`, async () => {
+    return await prisma.campaigns.findUnique({
+      where: { target_cast_hash: castHash },
+    });
   });
 }
 
@@ -35,8 +39,11 @@ export async function recordMint(campaignId: number, tokenId: number, recipientA
 }
 
 export async function findCampaignById(campaignId: number) {
-  return await prisma.campaigns.findUnique({
-    where: { id: campaignId },
+  // Cachear búsquedas por ID
+  return campaignsCache.getOrSet(campaignId.toString(), async () => {
+    return await prisma.campaigns.findUnique({
+      where: { id: campaignId },
+    });
   });
 }
 

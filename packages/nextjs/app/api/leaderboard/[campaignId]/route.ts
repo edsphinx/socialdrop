@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { applyRateLimit, rateLimiters } from "~~/lib/rate-limit";
 import * as leaderboardService from "~~/services/leaderboard.service";
 
 /**
@@ -15,6 +16,12 @@ import * as leaderboardService from "~~/services/leaderboard.service";
  * - /api/leaderboard/1?page=2&limit=20
  */
 export async function GET(request: NextRequest, { params }: { params: { campaignId: string } }) {
+  // Aplicar rate limiting (60 requests por minuto)
+  const rateLimit = applyRateLimit(request, rateLimiters.leaderboard);
+  if (!rateLimit.success) {
+    return NextResponse.json({ error: rateLimit.message }, { status: 429, headers: rateLimit.headers });
+  }
+
   try {
     const campaignId = parseInt(params.campaignId);
 

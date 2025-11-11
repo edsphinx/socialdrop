@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
+import { applyRateLimit, rateLimiters } from "~~/lib/rate-limit";
 import * as blockchain from "~~/services/blockchain.service";
 import * as db from "~~/services/database.service";
 import * as neynar from "~~/services/neynar.service";
 
 export async function POST(request: Request) {
+  // Aplicar rate limiting (10 intentos por minuto)
+  const rateLimit = applyRateLimit(request, rateLimiters.claim);
+  if (!rateLimit.success) {
+    return NextResponse.json({ error: rateLimit.message }, { status: 429, headers: rateLimit.headers });
+  }
+
   try {
     const body = await request.json();
     if (!body) {
