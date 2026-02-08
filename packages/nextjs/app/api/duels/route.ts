@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { neynarClient } from "~~/lib/clients/neynar";
+import { personalNeynarClient } from "~~/lib/clients/neynar";
 import prisma from "~~/lib/clients/prisma";
 
 interface Duel {
@@ -13,7 +13,7 @@ interface Duel {
 
 export async function GET() {
   try {
-    // Obtenemos los 10 puntajes más altos como nuestros "duelos activos"
+    // Get the top 10 scores as "active duels"
     const topScores = await prisma.gamification_scores.findMany({
       orderBy: { score: "desc" },
       take: 10,
@@ -24,12 +24,12 @@ export async function GET() {
       },
     });
 
-    // Extraemos los FIDs de los duelistas para obtener sus perfiles
+    // Extract FIDs to fetch their profiles
     const duelistFids = topScores.map(score => score.nft_holder_fid).filter((fid): fid is number => fid !== null);
 
     let duels: Duel[] = [];
     if (duelistFids.length > 0) {
-      const usersResponse = await neynarClient.fetchBulkUsers({ fids: duelistFids });
+      const usersResponse = await personalNeynarClient.fetchBulkUsers({ fids: duelistFids });
       const usersMap = new Map(usersResponse.users.map(user => [user.fid, user]));
 
       duels = topScores.map(score => {
@@ -47,7 +47,7 @@ export async function GET() {
 
     return NextResponse.json({ duels });
   } catch (error) {
-    console.error("Error al obtener la lista de duelos:", error);
-    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+    console.error("Error fetching duels list:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

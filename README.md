@@ -1,160 +1,177 @@
-# SocialDrop 💧
+# SocialDrop
 
-### La Plataforma de Airdrops que Crea Comunidades, no Mercenarios.
+### The airdrop platform that builds communities, not mercenaries.
 
-*Un proyecto para el Mini Hackathon A0x - Base.*
-
----
-
-**Enlaces Clave:**
-* **Demo en Vivo:** <https://socialdrop.live>
-* **Video Pitch (3-4 min):** `#`
-* **Repositorio:** <https://github.com/edsphinx/socialdrop>
+**Free public infrastructure for engagement-driven NFT airdrops on Base.**
 
 ---
 
-## 1. El Problema: Los Airdrops Están Rotos
+**Links:**
+- **Live App:** <https://socialdrop.live>
+- **Repository:** <https://github.com/edsphinx/socialdrop>
+- **Verified Contract:** [View on Basescan](https://sepolia.basescan.org/address/0xB246F4D44e02AA578E4CeF9Fca03987Ee23AD7F2)
+- **Platform Metrics:** <https://socialdrop.live/analytics>
 
-En Web3, el engagement es el oxígeno que mantiene vivo a cualquier proyecto. Pero las herramientas más usadas *los airdrops* fallan de raíz.
+---
 
-Las marcas reparten miles de tokens a wallets anónimas, los usuarios los reclaman, los venden y desaparecen. Nunca vuelven.
+## What is SocialDrop?
 
-El resultado es dinero quemado, costo de adquisición de clientes altísimo con una retención cercana a cero. **Se atraen mercenarios, no una comunidad.**
+SocialDrop is a free, open-source platform that lets anyone launch NFT airdrop campaigns directly inside Farcaster. Instead of spraying tokens at anonymous wallets, creators reward real social engagement — and the NFTs themselves evolve on-chain based on the holder's influence.
 
-## 2. Nuestra Solución: Engagement Real, No Especulación
+It turns passive recipients into active promoters through the **War of Influence** gamification mechanic.
 
-Con SocialDrop reescribimos las reglas.
+## The Problem
 
-Ya no se trata de repartir tokens al azar. En lugar de airdrops masivos e impersonales, permitimos a las marcas y creadores que puedan lanzar campañas directamente en **Farcaster**, la red social descentralizada, y convertir cada interacción en parte de una narrativa viva.
+Airdrops are the most popular growth tool in Web3 — and they're fundamentally broken.
 
-La entrada es simple y nativa: dar 'like' a un cast.
-Pero la magia está en lo que sigue: No solo distribuimos NFTs; los NFTs que se reclaman en SocialDrop no son solo souvenirs, creamos un **ciclo de engagement sostenible** donde las recompensas están ligadas a la influencia real, y los NFTs se convierten en **trofeos digitales vivientes** que reflejan el estatus del usuario dentro de la comunidad.
+Brands distribute thousands of tokens to anonymous wallets. Users claim them, sell immediately, and disappear. Studies show **66% of airdrop recipients sell within the first week**, and long-term retention sits below 10%.
 
-Un ciclo virtuoso donde la recompensa depende de la influencia real, no de la especulación rápida.
+The result: burned capital, astronomical customer acquisition costs, and near-zero retention. **Airdrops attract mercenaries, not communities.**
+
+## The Solution
+
+SocialDrop rewrites the rules. Instead of impersonal mass distributions, creators launch campaigns directly on Farcaster — the decentralized social network — and every interaction becomes part of a living narrative.
+
+The entry is simple and native: like a cast to claim your NFT.
+
+But the real value comes after. The NFTs claimed through SocialDrop aren't static souvenirs. They're **living digital trophies** that evolve on-chain based on the holder's real social influence. This creates a sustainable engagement cycle where rewards are tied to genuine impact, not quick speculation.
 
 ```mermaid
 graph TD
-    subgraph "Ciclo Virtuoso de SocialDrop"
-        A[1. Marca Lanza Campaña] --> B[2. Usuario da 'Like' al Cast];
-        B --> C[3. Usuario Reclama NFT<br>en Mini-App];
-        C --> D[4. Usuario Compite<br>por Influencia];
-        D --> E[5. NFT Evoluciona<br>On-Chain];
-        E --> F[6. Se genera Más<br>Visibilidad para la Marca];
+    subgraph "SocialDrop Virtuous Cycle"
+        A[1. Creator Launches Campaign] --> B["2. User Likes the Cast"];
+        B --> C["3. User Claims NFT via Mini-App"];
+        C --> D["4. User Competes for Influence"];
+        D --> E["5. NFT Evolves On-Chain"];
+        E --> F["6. More Visibility for the Creator"];
         F -.-> A;
     end
 ```
 
-## 3. La "Guerra de Influencia": Nuestro Diferenciador Clave
+## War of Influence: The Differentiator
 
-El airdrop es solo el Nivel 1, la chispa inicial. Después, llega la **"Guerra de Influencia"**: a arena donde los nuevos dueños de NFTs se convierten en gladiadores sociales.
+The airdrop is just Level 1 — the initial spark. After claiming, the **War of Influence** begins: an arena where NFT holders become social gladiators.
 
-* **La Misión:** Cada participante crear y promocionar un cast propio para promocionar la campaña.
-* **La Métrica:** El éxito se mide en 'likes'. Gana el cast más influyente.
-* **El Escenario:** La competencia es pública y se sigue en un leaderboard en tiempo real dentro de nuestra Mini-App, directamente en Farcaster.
-* **La Recompensa:** Al alcanzar hitos de influencia, nuestro Smart Contract en Base **evoluciona el NFT del usuario**, cambiando su apariencia on-chain para siempre. 
-El NFT pasa de ser un regalo a ser un **símbolo de estatus verificable**.
+- **The Mission:** Each participant creates and promotes their own cast to spread the campaign.
+- **The Metric:** Success is measured in likes. The most influential cast wins.
+- **The Arena:** Competition is public and tracked on a real-time leaderboard inside the Farcaster Mini-App.
+- **The Reward:** When influence milestones are reached, the smart contract **evolves the user's NFT on-chain**, permanently upgrading its appearance.
 
----
+The NFT goes from being a free handout to a **verifiable status symbol**.
 
-## 4. Arquitectura y Tech Stack
+| Milestone | NFT Level | Meaning |
+|-----------|-----------|---------|
+| Claim | Level 1 | Participant |
+| 10 likes | Level 2 | Influencer |
+| 25 likes | Level 3 | Champion |
+| 50 likes | Level 4 | Legend |
 
-Para construir esta experiencia fluida y segura, diseñamos una arquitectura robusta y moderna, demostrando nuestra capacidad técnica.
+## Architecture
 
 ```mermaid
 graph TD
-    subgraph "Cliente (Usuario en Farcaster)"
+    subgraph "Client (Farcaster User)"
         A[Frontend: Next.js Mini-App]
     end
 
     subgraph "Backend (Vercel Serverless)"
         B[API Routes]
-        C["Base de Datos (Supabase)"]
+        C["Database (Supabase/Postgres)"]
     end
 
-    subgraph "Servicios Externos"
-        D["Blockchain (Contrato en Base)"]
-        E["API Social (Neynar)"]
+    subgraph "External Services"
+        D["Blockchain (Base)"]
+        E["Social API (Neynar)"]
     end
 
-    A -- Peticiones de Usuario --> B;
-    A -- Lecturas de Contrato --> D;
-    B -- Lógica de Negocio --> C;
-    B -- Transacciones (Mint/Evolve) --> D;
-    B -- Verificación de Datos --> E;
+    A -- User Requests --> B;
+    A -- Contract Reads --> D;
+    B -- Business Logic --> C;
+    B -- Transactions: Mint/Evolve --> D;
+    B -- Data Verification --> E;
 ```
 
-* **Frontend (`Next.js App Router`):** Usamos `scaffold-eth-2` y `wagmi` para una experiencia de usuario rápida y robusta. La separación de Componentes de Servidor y Cliente con `Suspense` garantiza una carga óptima.
-* **Backend (`Next.js API Routes`):** Desplegado en Vercel, nos proporciona una infraestructura serverless que escala automáticamente.
-* **Base de Datos (`Supabase/Postgres`):** Elegimos Supabase por su fiabilidad y la facilidad de integración con Prisma para un acceso a datos seguro y tipado.
-* **Blockchain (`Solidity / Base`):** Nuestro contrato vive en Base para aprovechar sus bajas comisiones y su creciente ecosistema social. `Viem` nos asegura una interacción eficiente con el contrato.
-* **Integración Farcaster (`Neynar API`):** Usamos Neynar como nuestra fuente de verdad para todos los datos sociales de Farcaster.
+| Layer | Technology | Why |
+|-------|-----------|-----|
+| **Frontend** | Next.js App Router, scaffold-eth-2, wagmi | Fast, type-safe UI with native wallet integration |
+| **Backend** | Next.js API Routes on Vercel | Serverless, auto-scaling infrastructure |
+| **Database** | Supabase/Postgres with Prisma ORM | Reliable, type-safe data access |
+| **Blockchain** | Solidity on Base, Viem | Low gas costs (~$0.001/tx), growing social ecosystem |
+| **Social** | Neynar API | Source of truth for all Farcaster data |
 
-## 5. ✅ Checklist de Entregables del Hackathon
+## How It Works
 
-| Item                                                                 | Status |
-| -------------------------------------------------------------------- | :----: |
-| **Mini-App Funcional** desplegada en Base Sepolia y Vercel             |   ✔︎    |
-| **Smart Contract (Evolutivo)** verificado en Basescan                |   ✔︎    |
-| **Flujo de Creador** con modelo de negocio claro                     |   ✔︎    |
-| **Flujo de Participante** con reclamo on-chain                       |   ✔︎    |
-| **Video Pitch** y `README.md` completo                               |   ✔︎    |
-| **Potencial de Viralidad** demostrado con la "Guerra de Influencia" |   ✔︎    |
+### For Creators
+1. Visit the Creator Panel at `/admin/create`
+2. Enter campaign details: name, cast hash, max mints, NFT images per level
+3. Campaign goes live immediately — no payment required
 
-## 6. Modelo de Negocio y Sostenibilidad
+### For Participants
+1. See a campaign cast on Farcaster
+2. Like the cast
+3. Open the Mini-App and claim your Level 1 NFT
+4. Post your own promotional cast and register it
+5. Earn likes to evolve your NFT through the levels
 
-SocialDrop cobra un **fee simple** por campaña, basado en la escala del airdrop.
+## Public Good
 
-La diferencia está en que no ofrecemos tokens gratis; ofrecemos eventos sociales memorables, impulsados por competencia, hype y evolución on-chain.
+SocialDrop is **free to use** — no fees for creators, no fees for participants. Gas costs for minting are covered by the platform.
 
-La viralidad de la “Guerra de Influencia” multiplica el valor para las marcas y garantiza un camino claro hacia la sostenibilidad.
+We believe the Base ecosystem needs free, open infrastructure for social engagement. When creators can run campaigns at zero cost, more campaigns launch, more users onboard to Base, and the entire ecosystem grows.
 
-## 7. Plan de Crecimiento (Uso del Premio)
+**Why free?**
+- Removes friction for first-time creators
+- Encourages experimentation with social campaigns
+- Increases transaction volume on Base
+- Onboards Farcaster users to Base wallets
 
-Hemos diseñado un plan de inversión modular que se adapta al capital que recibamos.
-
-#### **Prioridad #1: La Chispa (≥ $150 USDC)**
-* **Inversión:** 6 meses de suscripción al plan "Standard" de Neynar (~$150).
-* **Resultado:** Desbloquear **webhooks** para implementar el "Airdrop Mágico" con minting 100% automático.
-
-#### **Prioridad #2: Impulso Comunitario (≥ $400 USDC)**
-* **Inversión:** Lo anterior + $250 para subsidiar costos de gas.
-* **Resultado:** Cubrir las **primeras 5,000 transacciones** de la plataforma, eliminando la fricción de entrada.
-
-#### **Prioridad #3: Crecimiento Acelerado (1er Lugar - $700 USDC)**
-* **Inversión:** Todo lo anterior + $300 adicionales.
-* **Resultado:** Asegurar **un año completo de API de Neynar** y lanzar un **Fondo Comunitario de $150** para micro-recompensas.
-
-## 8. 🔨 Quick Start (Desarrollo Local)
+## Getting Started (Local Development)
 
 ```bash
-# 1. Clonar el repositorio
-git clone [https://github.com/edsphinx/socialdrop](https://github.com/edsphinx/socialdrop)
+# 1. Clone the repository
+git clone https://github.com/edsphinx/socialdrop
 cd socialdrop
 
-# 2. Instalar dependencias
+# 2. Install dependencies
 yarn install
 
-# 3. Iniciar la cadena local y desplegar contratos
+# 3. Set up environment variables
+cp packages/nextjs/.env.example packages/nextjs/.env.local
+# Fill in: DATABASE_URL, NEYNAR_API_KEY, DEPLOYER_PRIVATE_KEY, BASE_RPC_URL
+
+# 4. Set up the database
+cd packages/nextjs
+yarn prisma migrate deploy
+yarn prisma db seed
+
+# 5. Start local chain and deploy contracts
 yarn chain
 yarn deploy
 
-# 4. Iniciar la aplicación de Next.js
+# 6. Start the Next.js app
 yarn start
 ```
 
-> **Prerrequisitos:** Node.js v20.19.3+, Yarn 3+.
+**Prerequisites:** Node.js v20+, Yarn 3+
 
-## 9. 👥 Equipo
+## Roadmap
 
-| Nombre       | Rol                           | Github / Farcaster                       |
-| ------------ | ----------------------------- | ---------------------------------------- |
-| **Ed S. F.** | Full-Stack / Smart Contracts | [@edsphinx](https://github.com/edsphinx) |
+- [x] Core airdrop flow (campaign creation, like-to-claim, NFT minting)
+- [x] Evolving NFT smart contract with on-chain level progression
+- [x] Farcaster Mini-App integration
+- [x] War of Influence gamification with real-time leaderboard
+- [ ] Base mainnet deployment
+- [ ] Webhook-driven automatic minting (requires Neynar Standard plan)
+- [ ] Multi-chain support (Base + other L2s)
+- [ ] Campaign analytics dashboard for creators
+- [ ] Token-gated campaigns (hold X to participate)
+- [ ] Collaborative campaigns (multiple creators, shared rewards)
 
-## 10. ✍️ Licencia
+## License
 
-MIT – ver `LICENSE`.
+MIT — see `LICENSE`.
 
-> Creemos que la **infraestructura abierta impulsa la adopción**.
-> Hazle fork, remízclalo, despliégalo – solo mantén la atribución.
+> We believe open infrastructure drives adoption.
+> Fork it, remix it, deploy it — just keep the attribution.
 
-*Hecho con ♥ en Honduras y desplegado en Base.*
+*Built with care in Honduras. Deployed on Base.*

@@ -16,6 +16,8 @@
     "start": "next dev",
     "vercel": "vercel --build-env YARN_ENABLE_IMMUTABLE_INSTALLS=false --build-env ENABLE_EXPERIMENTAL_COREPACK=1 --build-env VERCEL_TELEMETRY_DISABLED=1",
     "vercel:login": "vercel login",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "vercel:yolo": "vercel --build-env YARN_ENABLE_IMMUTABLE_INSTALLS=false --build-env ENABLE_EXPERIMENTAL_COREPACK=1 --build-env NEXT_PUBLIC_IGNORE_BUILD_ERROR=true --build-env VERCEL_TELEMETRY_DISABLED=1"
   },
   "dependencies": {
@@ -63,7 +65,8 @@
     "tsx": "^4.20.5",
     "type-fest": "~4.26.1",
     "typescript": "~5.8.2",
-    "vercel": "~39.1.3"
+    "vercel": "~39.1.3",
+    "vitest": "^4.0.18"
   },
   "packageManager": "yarn@3.2.3"
 }

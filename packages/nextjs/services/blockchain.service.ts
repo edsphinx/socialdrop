@@ -3,61 +3,51 @@ import { privateKeyToAccount } from "viem/accounts";
 import { baseSepolia } from "viem/chains";
 import deployedContracts from "~~/contracts/deployedContracts";
 
-// let chain: Chain;
-// let transport: any;
-
-// if (process.env.NODE_ENV === "production") {
-//   // --- PRODUCCIÓN (Vercel) ---
-//   chain = baseSepolia;
-//   if (!process.env.BASE_SEPOLIA_RPC_URL) {
-//     throw new Error("BASE_SEPOLIA_RPC_URL is not set in .env for production");
-//   }
-//   transport = http(process.env.BASE_SEPOLIA_RPC_URL);
-//   console.log("[Viem Service] Usando la red de producción: Base Sepolia");
-// } else {
-//   // --- DESARROLLO (Local) ---
-//   chain = hardhat;
-//   transport = http(); // http() sin argumentos apunta a http://127.0.0.1:8545
-//   console.log("[Viem Service] Usando la red de desarrollo: Hardhat Local");
-// }
-
 const chain = baseSepolia;
 const chainId = chain.id;
-const transport = http(process.env.BASE_SEPOLIA_RPC_URL);
-const contractData = deployedContracts[chainId as keyof typeof deployedContracts]?.EvolvingNFT;
-console.log("[Viem Service] Usando la red de desarrollo: Base Sepolia", chain);
+const transport = http(process.env.BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org");
 
-if (!contractData) {
-  throw new Error(`Contrato EvolvingNFT no encontrado en la chainId ${chainId}. Asegúrate de haberlo desplegado.`);
+function getContractData() {
+  const data = deployedContracts[chainId as keyof typeof deployedContracts]?.EvolvingNFT;
+  if (!data) throw new Error(`EvolvingNFT contract not found on chainId ${chainId}. Make sure it has been deployed.`);
+  return data;
 }
 
-const { address: contractAddress, abi: contractABI } = contractData;
+let _publicClient: any = null;
 
-if (!process.env.DEPLOYER_PRIVATE_KEY) {
-  throw new Error("DEPLOYER_PRIVATE_KEY is not set in .env");
+let _walletClient: any = null;
+
+function getPublicClient() {
+  if (!_publicClient) {
+    _publicClient = createPublicClient({ chain, transport });
+  }
+  return _publicClient;
 }
-const account = privateKeyToAccount(process.env.DEPLOYER_PRIVATE_KEY as `0x${string}`);
 
-const publicClient = createPublicClient({
-  chain,
-  transport,
-});
-
-const walletClient = createWalletClient({
-  account,
-  chain,
-  transport,
-}).extend(publicActions);
+function getWalletClient() {
+  if (!_walletClient) {
+    if (!process.env.DEPLOYER_PRIVATE_KEY) {
+      throw new Error("DEPLOYER_PRIVATE_KEY is not set in .env");
+    }
+    const account = privateKeyToAccount(process.env.DEPLOYER_PRIVATE_KEY as `0x${string}`);
+    _walletClient = createWalletClient({ account, chain, transport }).extend(publicActions);
+  }
+  return _walletClient;
+}
 
 /**
- * Mintea un nuevo NFT a la dirección especificada usando Viem.
- * @param recipientAddress - La dirección que recibirá el NFT.
- * @returns Un objeto con el resultado de la operación.
+ * Mints a new NFT to the specified address using Viem.
+ * @param recipientAddress - The address that will receive the NFT.
+ * @returns An object with the operation result.
  */
 export async function mintNFT(
   recipientAddress: `0x${string}`,
 ): Promise<{ success: boolean; tokenId: number; hash: `0x${string}` }> {
   try {
+    const { address: contractAddress, abi: contractABI } = getContractData();
+    const walletClient = getWalletClient();
+    const publicClient = getPublicClient();
+
     const hash = await walletClient.writeContract({
       address: contractAddress,
       abi: contractABI,
@@ -67,7 +57,7 @@ export async function mintNFT(
 
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
 
-    if (receipt.status === "reverted") throw new Error("La transacción fue revertida.");
+    if (receipt.status === "reverted") throw new Error("Transaction was reverted.");
 
     let tokenId = -1;
     for (const log of receipt.logs) {
@@ -82,7 +72,7 @@ export async function mintNFT(
       }
     }
 
-    console.log(`[Viem Service] ¡Mint exitoso! Token ID: ${tokenId}`);
+    console.log(`[Viem Service] Mint successful! Token ID: ${tokenId}`);
     return { success: true, tokenId, hash };
   } catch (error) {
     console.error("[Viem Service] Error minting NFT:", error);
@@ -92,15 +82,19 @@ export async function mintNFT(
 
 export async function evolveNFT(tokenId: number): Promise<{ success: boolean; hash: `0x${string}` }> {
   try {
+    const { address: contractAddress, abi: contractABI } = getContractData();
+    const walletClient = getWalletClient();
+    const publicClient = getPublicClient();
+
     const hash = await walletClient.writeContract({
       address: contractAddress,
       abi: contractABI,
       functionName: "evolve",
-      args: [BigInt(tokenId)], // Los uint256 se pasan como BigInt
+      args: [BigInt(tokenId)],
     });
 
     await publicClient.waitForTransactionReceipt({ hash });
-    console.log(`[Viem Service] ¡Evolución exitosa! Token ID: ${tokenId}`);
+    console.log(`[Viem Service] Evolution successful! Token ID: ${tokenId}`);
     return { success: true, hash };
   } catch (error) {
     console.error(`[Viem Service] Error evolving NFT ${tokenId}:`, error);
@@ -109,12 +103,15 @@ export async function evolveNFT(tokenId: number): Promise<{ success: boolean; ha
 }
 
 /**
- * Lee el nivel de evolución actual de un NFT desde la blockchain.
- * @param tokenId El ID del token a consultar.
- * @returns {Promise<number>} El nivel actual del NFT.
+ * Reads the current evolution level of an NFT from the blockchain.
+ * @param tokenId The token ID to query.
+ * @returns The current level of the NFT.
  */
 export async function getLevelOf(tokenId: number): Promise<number> {
   try {
+    const { address: contractAddress, abi: contractABI } = getContractData();
+    const publicClient = getPublicClient();
+
     const level = await publicClient.readContract({
       address: contractAddress,
       abi: contractABI,
@@ -123,7 +120,7 @@ export async function getLevelOf(tokenId: number): Promise<number> {
     });
     return Number(level);
   } catch (error) {
-    console.error(`[Viem Service] Error al leer el nivel del token ${tokenId}:`, error);
-    return 1; // Devolvemos 1 como fallback seguro
+    console.error(`[Viem Service] Error reading level for token ${tokenId}:`, error);
+    return 1;
   }
 }

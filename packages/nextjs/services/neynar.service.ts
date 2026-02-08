@@ -1,4 +1,4 @@
-import { personalNeynarClient, readOnlyNeynarClient } from "~~/lib/clients/neynar";
+import { personalNeynarClient } from "~~/lib/clients/neynar";
 
 interface CastOptions {
   embeds?: { url: string }[];
@@ -13,7 +13,7 @@ export async function getWalletFromFid(fid: number): Promise<string | null> {
 
     if (!user) return null;
 
-    // Priorizamos wallets verificadas, luego la de custodia
+    // Prioritize verified wallets, then custody address
     let address = user.verified_addresses?.eth_addresses?.[0];
     if (!address) {
       address = user.custody_address;
@@ -26,47 +26,44 @@ export async function getWalletFromFid(fid: number): Promise<string | null> {
 }
 
 /**
- * Obtiene los datos clave de un usuario de Farcaster a partir de su FID.
- * @param fid - El Farcaster ID del usuario.
- * @returns Un objeto con la dirección de la wallet y el nombre de usuario, o null si no se encuentra.
+ * Gets key data for a Farcaster user from their FID.
+ * @param fid - The Farcaster ID of the user.
+ * @returns An object with the wallet address and username, or null if not found.
  */
 export async function getUserDataFromFid(fid: number): Promise<{ address: string; username: string } | null> {
   try {
-    console.log(`[Neynar Service] Buscando datos para el FID: ${fid}`);
+    console.log(`[Neynar Service] Fetching data for FID: ${fid}`);
     const userResponse = await personalNeynarClient.fetchBulkUsers({ fids: [fid] });
     const user = userResponse.users[0];
 
     if (!user) {
-      console.warn(`[Neynar Service] No se encontró usuario para el FID: ${fid}`);
+      console.warn(`[Neynar Service] No user found for FID: ${fid}`);
       return null;
     }
 
-    // Lógica para seleccionar la wallet
     let address = user.verified_addresses?.eth_addresses?.[0];
     if (!address) {
       address = user.custody_address;
     }
 
-    // Si no encontramos una dirección de wallet, no podemos continuar.
     if (!address) {
-      console.warn(`[Neynar Service] No se encontró wallet para el FID: ${fid}`);
+      console.warn(`[Neynar Service] No wallet found for FID: ${fid}`);
       return null;
     }
 
-    // Devolvemos el objeto completo con los datos que necesitamos.
     return {
       address,
       username: user.username,
     };
   } catch (error) {
-    console.error("[Neynar Service] Error al obtener datos del usuario:", error);
+    console.error("[Neynar Service] Error getting user data:", error);
     return null;
   }
 }
 
 export async function didUserLikeCast(fid: number, castHash: string): Promise<boolean> {
   try {
-    const response = await readOnlyNeynarClient.fetchCastReactions({
+    const response = await personalNeynarClient.fetchCastReactions({
       hash: castHash,
       types: ["likes"],
       viewerFid: fid,
@@ -74,50 +71,49 @@ export async function didUserLikeCast(fid: number, castHash: string): Promise<bo
 
     return response.reactions.some(reaction => reaction.user.fid === fid);
   } catch (error) {
-    console.error("[Neynar Service] Error al verificar la reacción del cast:", error);
+    console.error("[Neynar Service] Error verifying cast reaction:", error);
     return false;
   }
 }
 
 /**
- * Publica un cast en Farcaster usando Neynar.
- * @param text - El contenido del cast.
- * @param options - Opciones adicionales como embeds para Frames.
- * @returns El hash del cast publicado.
+ * Publishes a cast on Farcaster using Neynar.
+ * @param text - The cast content.
+ * @param options - Additional options like embeds for Frames.
+ * @returns The hash of the published cast.
  */
 export async function publishCast(text: string, options: CastOptions = {}) {
   const SIGNER_UUID = process.env.NEYNAR_SIGNER_UUID;
   if (!SIGNER_UUID) {
-    throw new Error("NEYNAR_SIGNER_UUID no está configurado en .env. La publicación del cast ha sido cancelada.");
+    throw new Error("NEYNAR_SIGNER_UUID is not configured in .env. Cast publishing has been cancelled.");
   }
 
   try {
-    console.log(`[Farcaster Service] Publicando cast...`);
+    console.log(`[Farcaster Service] Publishing cast...`);
 
     const response = await personalNeynarClient.publishCast({
-      signerUuid: SIGNER_UUID, // TypeScript ahora sabe que esto es un 'string'
+      signerUuid: SIGNER_UUID,
       text,
       ...options,
     });
 
     const hash = response.cast.hash;
 
-    console.log(`[Farcaster Service] Cast publicado exitosamente. Hash: ${hash}`);
+    console.log(`[Farcaster Service] Cast published successfully. Hash: ${hash}`);
     return { success: true, hash: hash };
   } catch (error) {
-    console.error("[Farcaster Service] Error al publicar el cast:", error);
+    console.error("[Farcaster Service] Error publishing cast:", error);
     return { success: false, hash: null };
   }
 }
 
 /**
- * Obtiene el número total de 'likes' de un cast
- * @param castHash El hash del cast a consultar.
- * @returns {Promise<number>} El número total de likes.
+ * Gets the total number of likes for a cast via SDK.
+ * @param castHash The hash of the cast to query.
  */
 export async function getCastLikesCountSDK(castHash: string) {
   try {
-    console.log(`[Neynar Service] Obteniendo conteo de likes para ${castHash} (vía SDK final)`);
+    console.log(`[Neynar Service] Getting like count for ${castHash} (via SDK)`);
 
     const { cast } = await personalNeynarClient.lookupCastByHashOrUrl({
       identifier: castHash,
@@ -125,28 +121,22 @@ export async function getCastLikesCountSDK(castHash: string) {
     });
 
     return cast;
-    // const likesCount = cast?.reactions?.likes_count;
-
-    // if (typeof likesCount === "number") {
-    //   console.log(`[Neynar Service] El cast tiene ${likesCount} likes.`);
-    //   return likesCount;
-    // }
   } catch (error) {
-    console.error(`[Neynar Service] Error con lookupCastByHashOrUrl:`, error);
+    console.error(`[Neynar Service] Error with lookupCastByHashOrUrl:`, error);
     return 0;
   }
 }
 
 /**
- * Obtiene el número total de 'likes' de un cast, haciendo una llamada directa a la API de Neynar.
- * Este método es el más robusto porque no depende del SDK.
- * @param castHash El hash del cast a consultar.
- * @returns {Promise<number>} El número total de likes.
+ * Gets the total number of likes for a cast via direct API call.
+ * This method is the most robust because it doesn't depend on the SDK.
+ * @param castHash The hash of the cast to query.
+ * @returns The total number of likes.
  */
 export async function getCastLikesCount(castHash: string): Promise<number> {
   const apiKey = process.env.NEYNAR_API_KEY_PERSONAL;
   if (!apiKey) {
-    console.error("[Neynar Service] La API key de lectura no está configurada.");
+    console.error("[Neynar Service] Read API key is not configured.");
     return 0;
   }
 
@@ -161,12 +151,12 @@ export async function getCastLikesCount(castHash: string): Promise<number> {
   };
 
   try {
-    console.log(`[Neynar Service] Obteniendo conteo de likes para ${castHash} (vía fetch directo)`);
+    console.log(`[Neynar Service] Getting like count for ${castHash} (via direct fetch)`);
 
     const response = await fetch(url, options);
 
     if (!response.ok) {
-      throw new Error(`La API de Neynar respondió con el estado: ${response.status}`);
+      throw new Error(`Neynar API responded with status: ${response.status}`);
     }
 
     const data = await response.json();
@@ -178,7 +168,7 @@ export async function getCastLikesCount(castHash: string): Promise<number> {
 
     return 0;
   } catch (error) {
-    console.error(`[Neynar Service] Error al obtener el conteo de likes para ${castHash}:`, error);
+    console.error(`[Neynar Service] Error getting like count for ${castHash}:`, error);
     return 0;
   }
 }

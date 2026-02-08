@@ -3,12 +3,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
-import { FireIcon } from "@heroicons/react/24/solid";
+import { ArrowPathIcon, FireIcon, TrophyIcon } from "@heroicons/react/24/solid";
 import { useFarcaster } from "~~/hooks/useFarcaster";
 
-// La siguiente es una version para Demo TODO: Implementar Producto Real
-
-// --- Tipos de Datos para mayor claridad ---
 interface NftStatus {
   tokenId: number;
   name: string;
@@ -17,198 +14,231 @@ interface NftStatus {
   level: number;
 }
 
-// 1. Centralizamos las URLs de las imágenes de cada nivel aquí
-const LEVEL_IMAGES: { [key: number]: string } = {
-  1: "https://ipfs.io/ipfs/bafybeiakfsnmcuqenkwsbhtpi4mh5dq62aho3g2svww5hfw5b4lodgfh3m",
-  2: "https://ipfs.io/ipfs/bafybeic3rbxwu4tnhiozdpaorom4fk5aj2ue3utwgbxcfnyqtweoy2e4d4",
-  3: "https://ipfs.io/ipfs/bafybeicqqoskrn2t46kztiz3utes3rrbrlbgkflmafzy5nfjxcs3a2fnbm",
-  4: "https://ipfs.io/ipfs/bafybeihj4kvd47itz6dzt5zh4o4ze72f3ybn3fhaadlwwjxh4r4utactmy",
-};
-
-// --- Componente para mostrar a cada duelista ---
-const DuelistCard = ({
-  name,
-  imageUrl,
-  score,
-  level,
-  onAddLike,
-  isPlayer,
-}: {
+interface DuelEntry {
+  id: number;
   name: string;
-  imageUrl: string;
+  pfpUrl: string;
   score: number;
-  level: number;
-  onAddLike: () => void;
-  isPlayer: boolean;
-}) => (
-  <div className="w-full">
-    <img
-      src={imageUrl}
-      alt={name}
-      className={`w-full h-auto rounded-xl border-4 ${isPlayer ? "border-primary" : "border-secondary"} shadow-lg`}
-    />
-    <p className="mt-4 text-xl font-bold">{name}</p>
-    <div className={`stats ${isPlayer ? "bg-primary" : "bg-secondary"} text-primary-content mt-2 w-full`}>
-      <div className="stat">
-        <div className="stat-title">Puntaje</div>
-        <div className="stat-value">{score}</div>
-      </div>
-      <div className="stat">
-        <div className="stat-title">Nivel</div>
-        <div className="stat-value">{level}</div>
-      </div>
-    </div>
-    <button className="btn btn-success w-full mt-2" onClick={onAddLike}>
-      +1 Like (Simulación)
-    </button>
-  </div>
-);
+  campaignId: number;
+  campaignName: string;
+}
 
 export default function DuelPage() {
   const params = useParams();
   const campaignId = Number(params.campaignId);
   const { user, isLoading: isUserLoading } = useFarcaster();
 
-  // Estado para nuestro jugador (el usuario real)
   const [playerStatus, setPlayerStatus] = useState<NftStatus | null>(null);
-
-  // Estado para el oponente (simulado)
-  const [opponentStatus, setOpponentStatus] = useState<NftStatus>({
-    tokenId: 0,
-    name: "Oponente Legendario",
-    imageUrl: LEVEL_IMAGES[1],
-    score: 5,
-    level: 1,
-  });
-
+  const [leaderboard, setLeaderboard] = useState<DuelEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [notRegistered, setNotRegistered] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [castHash, setCastHash] = useState("");
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchPlayerStatus = (userForFetch: any) => {
-    if (userForFetch?.fid && campaignId > 0) {
-      setIsLoading(true);
-      setError(null);
-      fetch(`/api/gamification/status?fid=${userForFetch.fid}&campaignId=${campaignId}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) {
-            setError(data.error);
-            setPlayerStatus(null);
-          } else {
-            setPlayerStatus(data);
-          }
-        })
-        .catch(() => setError("No se pudo conectar con el servidor."))
-        .finally(() => setIsLoading(false));
-    } else {
+  const getUserFid = () => {
+    if (user?.fid) return user.fid;
+    if (process.env.NODE_ENV === "development") return 20039;
+    return null;
+  };
+
+  const fetchData = async () => {
+    const fid = getUserFid();
+    if (!fid || !campaignId) {
       setIsLoading(false);
-      setError("Faltan datos (usuario o campaña) para iniciar el duelo.");
+      setError("Missing user or campaign data.");
+      return;
+    }
+
+    setError(null);
+
+    try {
+      const [statusRes, duelsRes] = await Promise.all([
+        fetch(`/api/gamification/status?fid=${fid}&campaignId=${campaignId}`),
+        fetch("/api/duels"),
+      ]);
+
+      const statusData = await statusRes.json();
+      const duelsData = await duelsRes.json();
+
+      if (statusData.error) {
+        if (statusRes.status === 404) {
+          setNotRegistered(true);
+          setPlayerStatus(null);
+        } else {
+          setError(statusData.error);
+        }
+      } else {
+        setPlayerStatus(statusData);
+        setNotRegistered(false);
+      }
+
+      if (duelsData.duels) {
+        setLeaderboard(duelsData.duels.filter((d: DuelEntry) => d.campaignId === campaignId));
+      }
+    } catch {
+      setError("Could not connect to the server.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (isUserLoading) return; // Espera al hook principal
-
-    let userForFetch = user;
-    if (process.env.NODE_ENV === "development" && !user) {
-      userForFetch = { fid: 20039 } as any;
-    }
-    fetchPlayerStatus(userForFetch);
+    if (isUserLoading) return;
+    fetchData();
   }, [user, campaignId, isUserLoading]);
 
-  // --- Lógica de Simulación para la Demo ---
-  const handleSimulateLike = (player: "player" | "opponent") => {
-    if (player === "player" && playerStatus) {
-      const newScore = playerStatus.score + 1;
-      const currentLevel = playerStatus.level;
-      setPlayerStatus({ ...playerStatus, score: newScore });
+  const handleRegister = async () => {
+    const fid = getUserFid();
+    if (!fid || !castHash.trim()) return;
 
-      if (newScore === 10 && currentLevel === 1) handleEvolveDemo(playerStatus.tokenId);
-      if (newScore === 20 && currentLevel === 2) handleEvolveDemo(playerStatus.tokenId);
-    } else if (player === "opponent") {
-      const newScore = opponentStatus.score + 1;
-      let newLevel = opponentStatus.level;
-      let newImageUrl = opponentStatus.imageUrl;
-
-      // 2. Añadimos la lógica de evolución para el oponente
-      if (newScore === 8 && opponentStatus.level === 1) {
-        newLevel = 2;
-        newImageUrl = LEVEL_IMAGES[2];
-      }
-      if (newScore === 15 && opponentStatus.level === 2) {
-        newLevel = 3;
-        newImageUrl = LEVEL_IMAGES[3];
-      }
-      setOpponentStatus({ ...opponentStatus, score: newScore, level: newLevel, imageUrl: newImageUrl });
-    }
-  };
-
-  const handleEvolveDemo = async (tokenId: number) => {
-    const toastId = toast.loading("¡Evolucionando NFT!");
+    setIsRegistering(true);
     try {
-      await fetch("/api/test/evolve", {
+      const res = await fetch("/api/gamification/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tokenId: tokenId,
-          secret: process.env.TEST_MINT_SECRET,
-        }),
+        body: JSON.stringify({ userFid: fid, campaignId, castHash: castHash.trim() }),
       });
-      toast.dismiss(toastId);
-      toast.success("¡Tu NFT ha subido de Nivel!");
-      setTimeout(fetchPlayerStatus, 1500); // Esperamos a la blockchain y refrescamos
-    } catch (err) {
-      toast.dismiss(toastId);
-      toast.error("Falló la evolución de prueba.");
-      console.error(err);
+      const data = await res.json();
+
+      if (data.success) {
+        toast.success("Registered! Your cast is now being tracked.");
+        setCastHash("");
+        await fetchData();
+      } else {
+        toast.error(data.error || "Registration failed.");
+      }
+    } catch {
+      toast.error("Could not connect to the server.");
+    } finally {
+      setIsRegistering(false);
     }
   };
 
-  if (isLoading)
+  const handleRefreshScore = async () => {
+    const fid = getUserFid();
+    if (!fid) return;
+
+    setIsRefreshing(true);
+    const toastId = toast.loading("Updating score...");
+    try {
+      const res = await fetch("/api/gamification/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userFid: fid, campaignId }),
+      });
+      const data = await res.json();
+      toast.dismiss(toastId);
+
+      if (data.evolved) {
+        toast.success(`Your NFT evolved to Level ${data.level}!`);
+      } else {
+        toast.success(`Score updated: ${data.score} likes`);
+      }
+
+      await fetchData();
+    } catch {
+      toast.dismiss(toastId);
+      toast.error("Could not update score.");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  if (isLoading) {
     return (
       <div className="text-center p-8">
         <span className="loading loading-spinner"></span>
       </div>
     );
+  }
 
   if (error) return <div className="text-center p-8 text-error">{error}</div>;
 
-  if (!playerStatus)
-    return (
-      <div className="text-center p-8 text-white">
-        No estás participando en esta campaña. ¡Registra tu &apos;cast&apos; para competir!
-      </div>
-    );
-
-  const userToDisplay = user || (process.env.NODE_ENV === "development" ? { username: "edsphinx.eth (dev)" } : null);
-
   return (
-    <div className="flex flex-col items-center min-h-screen p-4 text-white text-center">
-      <h1 className="text-3xl font-bold mb-2">Duelo de Influencia</h1>
+    <div className="flex flex-col items-center min-h-screen p-4 text-white text-center gap-6">
+      <h1 className="text-3xl font-bold flex items-center gap-2">
+        <FireIcon className="h-8 w-8 text-red-500" />
+        War of Influence
+      </h1>
 
-      <div className="w-full grid grid-cols-2 gap-4 items-start">
-        <DuelistCard
-          name={`@${userToDisplay?.username}`}
-          imageUrl={playerStatus.imageUrl}
-          score={playerStatus.score}
-          level={playerStatus.level}
-          onAddLike={() => handleSimulateLike("player")}
-          isPlayer={true}
-        />
+      {/* Registration Form */}
+      {notRegistered ? (
+        <div className="card bg-base-200 w-full max-w-md p-6">
+          <h2 className="text-xl font-bold mb-2">Join the Competition</h2>
+          <p className="text-sm opacity-70 mb-4">
+            Post a cast promoting this campaign, then paste the cast hash below to start competing. Your NFT will evolve
+            as you earn likes!
+          </p>
+          <input
+            type="text"
+            placeholder="Paste your cast hash (0x...)"
+            className="input input-bordered w-full mb-3"
+            value={castHash}
+            onChange={e => setCastHash(e.target.value)}
+          />
+          <button
+            className="btn btn-primary w-full"
+            onClick={handleRegister}
+            disabled={isRegistering || !castHash.trim()}
+          >
+            {isRegistering ? <span className="loading loading-spinner loading-sm"></span> : "Register Cast"}
+          </button>
+        </div>
+      ) : playerStatus ? (
+        /* Player Status Card */
+        <div className="card bg-base-200 w-full max-w-md p-6">
+          <img
+            src={playerStatus.imageUrl}
+            alt={playerStatus.name}
+            className="w-48 h-48 rounded-xl mx-auto border-4 border-primary shadow-lg"
+          />
+          <p className="mt-3 text-lg font-bold">@{user?.username || "you"}</p>
+          <div className="stats bg-primary text-primary-content mt-3 w-full">
+            <div className="stat">
+              <div className="stat-title">Score</div>
+              <div className="stat-value">{playerStatus.score}</div>
+            </div>
+            <div className="stat">
+              <div className="stat-title">Level</div>
+              <div className="stat-value">{playerStatus.level}</div>
+            </div>
+          </div>
+          <button className="btn btn-secondary w-full mt-3 gap-2" onClick={handleRefreshScore} disabled={isRefreshing}>
+            {isRefreshing ? (
+              <span className="loading loading-spinner loading-sm"></span>
+            ) : (
+              <ArrowPathIcon className="h-5 w-5" />
+            )}
+            Refresh Score
+          </button>
+        </div>
+      ) : null}
 
-        <DuelistCard
-          name={opponentStatus.name}
-          imageUrl={opponentStatus.imageUrl}
-          score={opponentStatus.score}
-          level={opponentStatus.level}
-          onAddLike={() => handleSimulateLike("opponent")}
-          isPlayer={false}
-        />
-      </div>
+      {/* Leaderboard */}
+      <div className="w-full max-w-md">
+        <h2 className="text-xl font-bold mb-3 flex items-center gap-2 justify-center">
+          <TrophyIcon className="h-6 w-6 text-yellow-500" />
+          Leaderboard
+        </h2>
 
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-        <FireIcon className="h-16 w-16 text-red-500 animate-pulse" />
-        <p className="font-black text-4xl text-white -mt-4">VS</p>
+        {leaderboard.length === 0 ? (
+          <p className="text-sm opacity-70">No competitors yet. Be the first!</p>
+        ) : (
+          <div className="space-y-2">
+            {leaderboard.map((entry, index) => (
+              <div key={entry.id} className="flex items-center gap-3 bg-base-200 rounded-lg p-3">
+                <span className="text-lg font-bold w-8">{index + 1}.</span>
+                <img src={entry.pfpUrl} alt={entry.name} className="w-10 h-10 rounded-full" />
+                <div className="flex-1 text-left">
+                  <p className="font-semibold">{entry.name}</p>
+                </div>
+                <span className="text-lg font-bold">{entry.score}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -7,57 +7,59 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     if (!body) {
-      return new NextResponse("Mensaje de Frame inválido.", { status: 400 });
+      return new NextResponse("Invalid request body.", { status: 400 });
     }
 
     const { userFid, campaignId } = body;
 
     if (!userFid) {
-      return new NextResponse("Mensaje de Frame inválido.", { status: 400 });
+      return new NextResponse("Invalid request body.", { status: 400 });
     }
 
-    // --- LÓGICA DE VALIDACIÓN
     const campaign = await db.findCampaignById(campaignId);
-    if (!campaign) return NextResponse.json({ success: false, message: "Campaña no encontrada." }, { status: 404 });
+    if (!campaign) return NextResponse.json({ success: false, message: "Campaign not found." }, { status: 404 });
 
     const userData = await neynar.getUserDataFromFid(userFid);
-    if (!userData)
-      return NextResponse.json({ success: false, message: "Usuario de Farcaster no encontrado." }, { status: 404 });
+    if (!userData) return NextResponse.json({ success: false, message: "Farcaster user not found." }, { status: 404 });
     const { address: recipientAddress, username } = userData;
 
-    // --- Verificaciones de Elegibilidad ---
+    // --- Eligibility checks ---
+    const mintCount = await db.getMintCount(campaign.id);
+    if (mintCount >= campaign.max_mints) {
+      return NextResponse.json({ success: false, message: "Campaign has reached its mint limit." }, { status: 409 });
+    }
+
     if (await db.hasUserMinted(campaign.id, recipientAddress)) {
-      return NextResponse.json({ success: false, message: "Ya has reclamado este NFT." }, { status: 409 }); // 409 Conflict
+      return NextResponse.json({ success: false, message: "You have already claimed this NFT." }, { status: 409 });
     }
 
     const hasLiked = await neynar.didUserLikeCast(userFid, campaign.target_cast_hash);
     if (!hasLiked) {
       return NextResponse.json(
-        { success: false, message: "Debes dar 'like' al cast original para reclamar." },
+        { success: false, message: "You must like the original cast to claim." },
         { status: 403 },
-      ); // 403 Forbidden
+      );
     }
 
-    // --- Lógica de Minting ---
+    // --- Minting ---
     const mintResult = await blockchain.mintNFT(recipientAddress as `0x${string}`);
     if (!mintResult.success) {
-      throw new Error("La transacción de mint falló.");
+      throw new Error("Mint transaction failed.");
     }
 
-    await db.recordMint(campaign.id, mintResult.tokenId, recipientAddress);
+    await db.recordMint(campaign.id, mintResult.tokenId, recipientAddress, userFid);
 
-    const castText = `🎉 ¡Éxito! @${username} acaba de reclamar el NFT #${mintResult.tokenId} del drop "${campaign.name}"!`;
+    const castText = `🎉 @${username} just claimed NFT #${mintResult.tokenId} from the "${campaign.name}" drop!`;
     await neynar.publishCast(castText);
 
-    // --- Respuesta de Éxito ---
     return NextResponse.json({
       success: true,
-      message: "¡NFT reclamado exitosamente!",
+      message: "NFT claimed successfully!",
       tokenId: mintResult.tokenId,
       transactionHash: mintResult.hash,
     });
   } catch (error: any) {
-    console.error("Error en el endpoint de claim:", error);
-    return NextResponse.json({ success: false, message: "Error interno del servidor." }, { status: 500 });
+    console.error("Error in claim endpoint:", error);
+    return NextResponse.json({ success: false, message: "Internal server error." }, { status: 500 });
   }
 }

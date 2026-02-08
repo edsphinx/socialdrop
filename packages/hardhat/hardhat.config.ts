@@ -4,7 +4,10 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-chai-matchers";
 import "@typechain/hardhat";
-import "hardhat-gas-reporter";
+if (process.env.REPORT_GAS) {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require("hardhat-gas-reporter");
+}
 import "solidity-coverage";
 import "@nomicfoundation/hardhat-verify";
 import "hardhat-deploy";
@@ -130,10 +133,17 @@ const config: HardhatUserConfig = {
     apiKey: `${etherscanApiKey}`,
     customChains: [
       {
+        network: "base",
+        chainId: 8453,
+        urls: {
+          apiURL: "https://api.basescan.org/api",
+          browserURL: "https://basescan.org",
+        },
+      },
+      {
         network: "baseSepolia",
         chainId: 84532,
         urls: {
-          // This must be the API endpoint for BASESCAN Sepolia
           apiURL: "https://api-sepolia.basescan.org/api",
           browserURL: "https://sepolia.basescan.org",
         },
@@ -141,7 +151,7 @@ const config: HardhatUserConfig = {
     ],
   },
   sourcify: {
-    enabled: false,
+    enabled: true,
   },
 };
 
