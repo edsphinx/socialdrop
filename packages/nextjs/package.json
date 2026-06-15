@@ -17,8 +17,7 @@
     "vercel": "vercel --build-env YARN_ENABLE_IMMUTABLE_INSTALLS=false --build-env ENABLE_EXPERIMENTAL_COREPACK=1 --build-env VERCEL_TELEMETRY_DISABLED=1",
     "vercel:login": "vercel login",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "vercel:yolo": "vercel --build-env YARN_ENABLE_IMMUTABLE_INSTALLS=false --build-env ENABLE_EXPERIMENTAL_COREPACK=1 --build-env NEXT_PUBLIC_IGNORE_BUILD_ERROR=true --build-env VERCEL_TELEMETRY_DISABLED=1"
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@farcaster/miniapp-sdk": "^0.1.10",

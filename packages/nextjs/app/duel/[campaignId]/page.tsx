@@ -39,9 +39,7 @@ export default function DuelPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const getUserFid = useCallback(() => {
-    if (user?.fid) return user.fid;
-    if (process.env.NODE_ENV === "development") return 20039;
-    return null;
+    return user?.fid ?? null;
   }, [user]);
 
   const fetchData = useCallback(async () => {
