@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ScaffoldEthAppWithProviders } from "@/components/ScaffoldEthAppWithProviders";
+import { AppProviders } from "@/components/AppProviders";
 import "@/styles/globals.css";
 
 export const metadata: Metadata = {
@@ -35,7 +35,7 @@ const SocialDropApp = ({ children }: { children: React.ReactNode }) => {
         <meta property="fc:frame:button:1" content="Launch SocialDrop" />
       </head>
       <body>
-        <ScaffoldEthAppWithProviders>{children}</ScaffoldEthAppWithProviders>
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );
