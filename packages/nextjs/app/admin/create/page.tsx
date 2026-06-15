@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import RangeSlider from "react-range-slider-input";
@@ -32,7 +33,7 @@ const CampaignPreviewCard = ({
         <div className="flex items-center space-x-3">
           <div className="avatar">
             <div className="mask mask-squircle w-12 h-12">
-              <img src={user?.pfp_url || "https://placehold.co/64"} alt="Avatar" />
+              <Image src={user?.pfp_url || "https://placehold.co/64"} alt="Avatar" width={48} height={48} unoptimized />
             </div>
           </div>
           <div>
@@ -43,9 +44,11 @@ const CampaignPreviewCard = ({
         <p className="mt-4 break-words">{castContent || "Claim this exclusive NFT by liking my cast!"}</p>
         <div className="card bg-base-100 shadow-md mt-4">
           <figure>
-            <img
+            <Image
               src={`https://placehold.co/600x400/101010/FFF?text=Your+NFT\\n(${nftCount}+Editions)`}
               alt="NFT Preview"
+              width={600}
+              height={400}
             />
           </figure>
         </div>
@@ -64,7 +67,7 @@ const UserProfileHeader = ({ user }: { user: FarcasterUser | null }) => {
       <div className="flex items-center justify-center gap-2 mt-2">
         <div className="avatar">
           <div className="mask mask-squircle w-6 h-6">
-            <img src={user.pfp_url} alt="User Avatar" />
+            <Image src={user.pfp_url ?? ""} alt="User Avatar" width={24} height={24} unoptimized />
           </div>
         </div>
         <span className="font-bold text-primary text-lg">@{user.username}</span>

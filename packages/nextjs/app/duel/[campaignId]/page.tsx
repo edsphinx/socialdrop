@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { ArrowPathIcon, FireIcon, TrophyIcon } from "@heroicons/react/24/solid";
@@ -37,13 +38,13 @@ export default function DuelPage() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const getUserFid = () => {
+  const getUserFid = useCallback(() => {
     if (user?.fid) return user.fid;
     if (process.env.NODE_ENV === "development") return 20039;
     return null;
-  };
+  }, [user]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     const fid = getUserFid();
     if (!fid || !campaignId) {
       setIsLoading(false);
@@ -82,12 +83,12 @@ export default function DuelPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [getUserFid, campaignId]);
 
   useEffect(() => {
     if (isUserLoading) return;
     fetchData();
-  }, [user, campaignId, isUserLoading]);
+  }, [fetchData, isUserLoading]);
 
   const handleRegister = async () => {
     const fid = getUserFid();
@@ -189,10 +190,13 @@ export default function DuelPage() {
       ) : playerStatus ? (
         /* Player Status Card */
         <div className="card bg-base-200 w-full max-w-md p-6">
-          <img
+          <Image
             src={playerStatus.imageUrl}
             alt={playerStatus.name}
+            width={192}
+            height={192}
             className="w-48 h-48 rounded-xl mx-auto border-4 border-primary shadow-lg"
+            unoptimized
           />
           <p className="mt-3 text-lg font-bold">@{user?.username || "you"}</p>
           <div className="stats bg-primary text-primary-content mt-3 w-full">
@@ -230,7 +234,14 @@ export default function DuelPage() {
             {leaderboard.map((entry, index) => (
               <div key={entry.id} className="flex items-center gap-3 bg-base-200 rounded-lg p-3">
                 <span className="text-lg font-bold w-8">{index + 1}.</span>
-                <img src={entry.pfpUrl} alt={entry.name} className="w-10 h-10 rounded-full" />
+                <Image
+                  src={entry.pfpUrl}
+                  alt={entry.name}
+                  width={40}
+                  height={40}
+                  className="w-10 h-10 rounded-full"
+                  unoptimized
+                />
                 <div className="flex-1 text-left">
                   <p className="font-semibold">{entry.name}</p>
                 </div>

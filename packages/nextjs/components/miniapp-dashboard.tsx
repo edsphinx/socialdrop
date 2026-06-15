@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import Farcaster from "@farcaster/miniapp-sdk";
 import toast from "react-hot-toast";
@@ -106,7 +107,14 @@ export default function MiniAppDashboard() {
         {mintedNFT ? (
           <div className="flex flex-col items-center">
             <h2 className="font-bold mb-4">Congratulations! Here&apos;s your NFT:</h2>
-            <img src={mintedNFT.image} alt={mintedNFT.name} className="w-48 h-48 rounded-lg border-2 border-primary" />
+            <Image
+              src={mintedNFT.image}
+              alt={mintedNFT.name}
+              width={192}
+              height={192}
+              className="w-48 h-48 rounded-lg border-2 border-primary"
+              unoptimized
+            />
             <p className="mt-2 font-bold">{mintedNFT.name}</p>
             <a
               href={`https://sepolia.basescan.org/tx/${mintedNFT.transactionHash}`}

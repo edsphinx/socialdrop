@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { FireIcon, TrophyIcon } from "@heroicons/react/24/outline";
 
@@ -13,7 +14,7 @@ const DuelListItem = ({ duel }: { duel: any }) => (
     <div className="card-body p-4 flex-row items-center gap-4">
       <div className="avatar">
         <div className="w-12 rounded-full">
-          <img src={duel.pfpUrl} alt={duel.name} />
+          <Image src={duel.pfpUrl} alt={duel.name} width={48} height={48} unoptimized />
         </div>
       </div>
       <div className="flex-grow">
