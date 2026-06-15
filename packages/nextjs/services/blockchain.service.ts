@@ -1,16 +1,13 @@
 import { createPublicClient, createWalletClient, decodeEventLog, http, publicActions } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { baseSepolia } from "viem/chains";
-import deployedContracts from "@/contracts/deployedContracts";
+import { EVOLVING_NFT_ADDRESS, evolvingNftAbi } from "@/contracts/abis";
 
 const chain = baseSepolia;
-const chainId = chain.id;
 const transport = http(process.env.BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org");
 
 function getContractData() {
-  const data = deployedContracts[chainId as keyof typeof deployedContracts]?.EvolvingNFT;
-  if (!data) throw new Error(`EvolvingNFT contract not found on chainId ${chainId}. Make sure it has been deployed.`);
-  return data;
+  return { address: EVOLVING_NFT_ADDRESS as `0x${string}`, abi: evolvingNftAbi };
 }
 
 let _publicClient: any = null;
