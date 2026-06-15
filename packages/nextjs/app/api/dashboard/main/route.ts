@@ -3,7 +3,7 @@ import prisma from "~~/lib/clients/prisma";
 
 export async function GET() {
   try {
-    // Obtenemos las 4 campañas activas más recientes para mostrar como "del momento"
+    // Get the 4 most recent active campaigns as "trending"
     const trendingCampaigns = await prisma.campaigns.findMany({
       where: { is_active: true },
       orderBy: { created_at: "desc" },
@@ -15,7 +15,7 @@ export async function GET() {
       },
     });
 
-    // Obtenemos los 4 puntajes más altos para mostrarlos como "duelos destacados"
+    // Get the top 4 scores as "featured duels"
     const topScores = await prisma.gamification_scores.findMany({
       orderBy: { score: "desc" },
       take: 4,
@@ -26,10 +26,8 @@ export async function GET() {
       },
     });
 
-    // Transformamos los datos para el frontend
-    const featuredDuels = topScores.map(score => ({
+    const featuredDuels = topScores.map((score: (typeof topScores)[number]) => ({
       id: score.id,
-      // En una app real, aquí usaríamos el FID para obtener el @username
       name: `Influencer FID #${score.nft_holder_fid}`,
       score: score.score,
       campaignName: score.campaign.name,
@@ -37,7 +35,7 @@ export async function GET() {
 
     return NextResponse.json({ trendingCampaigns, featuredDuels });
   } catch (error) {
-    console.error("Error al obtener los datos del dashboard:", error);
-    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+    console.error("Error fetching dashboard data:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

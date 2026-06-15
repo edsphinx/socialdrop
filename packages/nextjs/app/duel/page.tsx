@@ -18,7 +18,7 @@ const DuelListItem = ({ duel }: { duel: any }) => (
       </div>
       <div className="flex-grow">
         <p className="font-bold">{duel.name}</p>
-        <p className="text-xs text-base-content/70">en la campaña &quot;{duel.campaignName}&quot;</p>
+        <p className="text-xs text-base-content/70">in campaign &quot;{duel.campaignName}&quot;</p>
       </div>
       <div className="flex items-center gap-1 text-secondary font-bold">
         <TrophyIcon className="h-5 w-5" />
@@ -28,7 +28,6 @@ const DuelListItem = ({ duel }: { duel: any }) => (
   </Link>
 );
 
-// --- Componente Esqueleto para la carga ---
 const DuelListItemSkeleton = () => (
   <div className="card bg-base-100 shadow-md animate-pulse">
     <div className="card-body p-4 flex-row items-center gap-4">
@@ -61,10 +60,10 @@ export default function DuelsPage() {
   return (
     <div className="p-4 md:p-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-        <h1 className="text-3xl font-bold">Arena de Duelos</h1>
+        <h1 className="text-3xl font-bold">Duels Arena</h1>
         <Link href="/duel/1" passHref>
           <button className="btn btn-secondary mt-4 md:mt-0">
-            <FireIcon className="h-5 w-5" /> Mis Duelos Activos
+            <FireIcon className="h-5 w-5" /> My Active Duels
           </button>
         </Link>
       </div>
@@ -79,7 +78,7 @@ export default function DuelsPage() {
         ) : duels.length > 0 ? (
           duels.map(duel => <DuelListItem key={duel.id} duel={duel} />)
         ) : (
-          <p>No hay duelos activos en este momento. ¡Sé el primero en competir!</p>
+          <p>No active duels at the moment. Be the first to compete!</p>
         )}
       </div>
     </div>

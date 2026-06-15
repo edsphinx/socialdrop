@@ -8,32 +8,30 @@ export async function POST(request: NextRequest) {
     const { name, castContent, nftCount, creatorFid, nftImageUrl } = body;
 
     if (!name || !castContent || !nftCount || !creatorFid || !nftImageUrl) {
-      return NextResponse.json({ message: "Todos los campos son requeridos." }, { status: 400 });
+      return NextResponse.json({ message: "All fields are required." }, { status: 400 });
     }
 
-    // Publicar el cast en Farcaster y capturar el hash
     const publishResult = await publishCast(castContent);
     if (!publishResult.success || !publishResult.hash) {
-      throw new Error("No se pudo publicar el cast en Farcaster.");
+      throw new Error("Could not publish the cast on Farcaster.");
     }
     const castHash = publishResult.hash;
-    console.log(`[Campaign API] Cast publicado con éxito. Hash: ${castHash}`);
+    console.log(`[Campaign API] Cast published successfully. Hash: ${castHash}`);
 
-    // Guardar la campaña en la base de datos con el hash obtenido
     const newCampaign = await prisma.campaigns.create({
       data: {
         name: name,
         target_cast_hash: castHash,
         max_mints: nftCount,
         creator_fid: creatorFid,
-        is_active: true, // La campaña nace activa
+        is_active: true,
         nft_image_url_level_1: nftImageUrl,
       },
     });
 
     return NextResponse.json(newCampaign, { status: 201 });
   } catch (error) {
-    console.error("Error en /api/campaign:", error);
-    return NextResponse.json({ message: "Error interno del servidor." }, { status: 500 });
+    console.error("Error in /api/campaign:", error);
+    return NextResponse.json({ message: "Internal server error." }, { status: 500 });
   }
 }

@@ -1,7 +1,6 @@
-// lib/services/image.service.ts
 import { ImageResponse } from "@vercel/og";
 
-// Esta función genera la imagen inicial y de progreso
+// Generates the initial and progress image
 export async function getProgressImage(mintCount: number, maxMints: number, campaignName: string) {
   return new ImageResponse(
     (
@@ -23,14 +22,14 @@ export async function getProgressImage(mintCount: number, maxMints: number, camp
           {" "}
           {mintCount} / {maxMints}{" "}
         </p>
-        <p style={{ fontSize: "32px" }}> NFTs Entregados </p>
+        <p style={{ fontSize: "32px" }}> NFTs Claimed </p>
       </div>
     ),
-    { width: 800, height: 418 }, // Tamaño estándar para Frames
+    { width: 800, height: 418 },
   );
 }
 
-// Esta función genera la imagen que muestra las instrucciones
+// Generates the instructions image
 export async function getInstructionsImage() {
   return new ImageResponse(
     (
@@ -46,13 +45,11 @@ export async function getInstructionsImage() {
           justifyContent: "center",
         }}
       >
-        <h1 style={{ fontSize: "48px" }}> Cómo Participar </h1>
-        <p style={{ fontSize: "32px", marginTop: "20px" }}> Simplemente dale &rsquo;like&rsquo; al cast original </p>
-        <p style={{ fontSize: "32px" }}> para recibir el Airdrop Mágico.</p>
+        <h1 style={{ fontSize: "48px" }}> How to Participate </h1>
+        <p style={{ fontSize: "32px", marginTop: "20px" }}> Simply like the original cast </p>
+        <p style={{ fontSize: "32px" }}> to receive the Airdrop.</p>
       </div>
     ),
     { width: 800, height: 418 },
   );
 }
-
-// TODO: Crear una función para la imagen de los últimos ganadores

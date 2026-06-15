@@ -3,52 +3,51 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("Borrando datos antiguos...");
-  // Borramos en orden inverso para evitar problemas de claves foráneas
+  console.log("Deleting old data...");
   await prisma.gamification_scores.deleteMany({});
   await prisma.nfts_minted.deleteMany({});
   await prisma.campaigns.deleteMany({});
-  console.log("Datos antiguos borrados.");
+  console.log("Old data deleted.");
 
-  console.log("Creando campañas de prueba...");
+  console.log("Creating test campaigns...");
   const campaign1 = await prisma.campaigns.create({
     data: {
-      name: "Campaña de Lanzamiento Alpha",
+      name: "Alpha Launch Campaign",
       target_cast_hash: "0x1111111111111111111111111111111111111111",
       max_mints: 100,
       is_active: true,
       creator_fid: 20039,
-      nft_image_url_level_1: "ipfs://bafybeiakfsnmcuqenkwsbhtpi4mh5dq62aho3g2svww5hfw5b4lodgfh3m", // Nivel 1
-      nft_image_url_level_2: "ipfs://bafybeic3rbxwu4tnhiozdpaorom4fk5aj2ue3utwgbxcfnyqtweoy2e4d4", // Nivel 2
-      nft_image_url_level_3: "ipfs://bafybeicqqoskrn2t46kztiz3utes3rrbrlbgkflmafzy5nfjxcs3a2fnbm", // Nivel 3
+      nft_image_url_level_1: "ipfs://bafybeiakfsnmcuqenkwsbhtpi4mh5dq62aho3g2svww5hfw5b4lodgfh3m", // Level 1
+      nft_image_url_level_2: "ipfs://bafybeic3rbxwu4tnhiozdpaorom4fk5aj2ue3utwgbxcfnyqtweoy2e4d4", // Level 2
+      nft_image_url_level_3: "ipfs://bafybeicqqoskrn2t46kztiz3utes3rrbrlbgkflmafzy5nfjxcs3a2fnbm", // Level 3
     },
   });
 
   const campaign2 = await prisma.campaigns.create({
     data: {
-      name: "Colaboración Comunidad Base",
+      name: "Base Community Collab",
       target_cast_hash: "0x2222222222222222222222222222222222222222",
       max_mints: 500,
       is_active: true,
       creator_fid: 1327413,
-      nft_image_url_level_1: "ipfs://bafybeihj4kvd47itz6dzt5zh4o4ze72f3ybn3fhaadlwwjxh4r4utactmy", // Nivel 1
+      nft_image_url_level_1: "ipfs://bafybeihj4kvd47itz6dzt5zh4o4ze72f3ybn3fhaadlwwjxh4r4utactmy", // Level 1
     },
   });
 
   const campaign3 = await prisma.campaigns.create({
     data: {
-      name: "Campaña Pasada (Finalizada)",
+      name: "Past Campaign (Ended)",
       target_cast_hash: "0x3333333333333333333333333333333333333333",
       max_mints: 50,
-      is_active: false, // Campaña inactiva
+      is_active: false,
       creator_fid: 20039,
       nft_image_url_level_1: "ipfs://bafybeiakfsnmcuqenkwsbhtpi4mh5dq62aho3g2svww5hfw5b4lodgfh3m",
     },
   });
 
-  console.log("Campañas creadas.");
+  console.log("Campaigns created.");
 
-  console.log("Creando NFTs minteados de prueba...");
+  console.log("Creating test minted NFTs...");
   await prisma.nfts_minted.createMany({
     data: [
       { campaign_id: campaign1.id, token_id: 1, recipient_address: "0xAddress1", user_fid: 1, level: 2 },
@@ -57,9 +56,9 @@ async function main() {
       { campaign_id: campaign1.id, token_id: 3, recipient_address: "0xAddress3", user_fid: 4, level: 1 },
     ],
   });
-  console.log("NFTs minteados creados.");
+  console.log("Minted NFTs created.");
 
-  console.log("Creando duelos/puntajes de prueba...");
+  console.log("Creating test duels/scores...");
   await prisma.gamification_scores.createMany({
     data: [
       {
@@ -92,7 +91,7 @@ async function main() {
       },
     ],
   });
-  console.log("Duelos/puntajes creados.");
+  console.log("Duels/scores created.");
 }
 
 main()

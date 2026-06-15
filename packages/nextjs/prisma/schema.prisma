@@ -11,13 +11,13 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// MODELO PARA LAS CAMPAÑAS
-// Almacena la información principal de cada campaña de airdrop.
+// CAMPAIGNS MODEL
+// Stores the main information for each airdrop campaign.
 model campaigns {
   id                Int      @id @default(autoincrement())
   name              String
-  image_url         String? // Opcional, por si se usa una imagen por defecto
-  target_cast_hash  String   @unique // El hash del cast al que los usuarios deben dar "like"
+  image_url         String?
+  target_cast_hash  String   @unique // The hash of the cast users must "like"
   max_mints         Int      @default(100)
   created_at        DateTime @default(now())
 
@@ -26,46 +26,46 @@ model campaigns {
   nft_image_url_level_3 String?
 
   is_active         Boolean  @default(true)
-  creator_fid       Int? // Opcional, para saber quién la creó
+  creator_fid       Int?
 
-  // Relaciones: una campaña puede tener muchos nfts minteados y muchos puntajes de juego.
+  // Relations: a campaign can have many minted NFTs and many game scores.
   nfts_minted       nfts_minted[]
   gamification_scores gamification_scores[]
 }
 
-// MODELO PARA LOS NFTS ENTREGADOS
-// Registra cada NFT que se ha entregado para evitar duplicados.
+// MINTED NFTS MODEL
+// Records each NFT that has been delivered to prevent duplicates.
 model nfts_minted {
   id                Int      @id @default(autoincrement())
   token_id          Int
   recipient_address String
   minted_at         DateTime @default(now())
 
-  user_fid          Int? // Guardamos el FID para búsquedas más rápidas
-  level             Int      @default(1) // Guardamos el nivel actual del NFT
+  user_fid          Int?
+  level             Int      @default(1) // Current NFT level
 
-  // Relación: cada registro de mint pertenece a una campaña.
+  // Relation: each mint record belongs to a campaign.
   campaign          campaigns @relation(fields: [campaign_id], references: [id])
   campaign_id       Int
 
-  // Restricción: Un usuario solo puede recibir un NFT por campaña.
+  // Constraint: A user can only receive one NFT per campaign.
   @@unique([campaign_id, recipient_address])
 }
 
-// MODELO PARA LA GAMIFICACIÓN
-// Almacena los puntajes de los participantes en la "Guerra de Influencia".
+// GAMIFICATION MODEL
+// Stores participant scores in the "War of Influence".
 model gamification_scores {
   id                  Int      @id @default(autoincrement())
-  nft_holder_address  String   // La dirección del dueño del NFT
+  nft_holder_address  String   // The NFT owner's address
   score               Int      @default(0)
-  tracked_cast_hash   String?  // El hash del cast del participante que estamos rastreando
+  tracked_cast_hash   String?  // The hash of the participant's cast being tracked
 
-  nft_holder_fid      Int? // Guardamos el FID del dueño para relacionarlo más fácil
+  nft_holder_fid      Int?
 
-  // Relación: cada puntaje pertenece a una campaña.
+  // Relation: each score belongs to a campaign.
   campaign            campaigns @relation(fields: [campaign_id], references: [id])
   campaign_id         Int
 
-  // Restricción: Un usuario solo puede tener un puntaje por campaña.
+  // Constraint: A user can only have one score per campaign.
   @@unique([campaign_id, nft_holder_address])
 }

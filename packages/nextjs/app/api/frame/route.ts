@@ -9,7 +9,7 @@ export async function POST() {
       <head>
         <meta property="fc:frame" content="vNext" />
         <meta property="fc:frame:image" content="${successImageUrl}" />
-        <meta property="fc:frame:button:1" content="¡Éxito! Visita el sitio" />
+        <meta property="fc:frame:button:1" content="Success! Visit the site" />
         <meta property="fc:frame:button:1:action" content="link" />
         <meta property="fc:frame:button:1:target" content="https://socialdrop.live" />
       </head>

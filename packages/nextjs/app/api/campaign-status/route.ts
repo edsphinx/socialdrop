@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     const mintCount = await db.getMintCount(campaignId);
-    // Podrías añadir una función en tu db.service para obtener los últimos minters
+    // Could add a db.service function to get the latest minters
     // const recentWinners = await db.getRecentWinners(campaignId, 5);
 
     const responseData = {

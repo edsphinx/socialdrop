@@ -4,11 +4,9 @@ import prisma from "~~/lib/clients/prisma";
 export async function GET() {
   try {
     const campaigns = await prisma.campaigns.findMany({
-      // Ordenamos por la más reciente primero
       orderBy: {
         created_at: "desc",
       },
-      // Opcional: Incluir el conteo de mints para cada campaña
       include: {
         _count: {
           select: { nfts_minted: true },
@@ -17,7 +15,7 @@ export async function GET() {
     });
     return NextResponse.json(campaigns);
   } catch (error) {
-    console.error("Error al obtener las campañas:", error);
-    return NextResponse.json({ message: "Error interno del servidor." }, { status: 500 });
+    console.error("Error fetching campaigns:", error);
+    return NextResponse.json({ message: "Internal server error." }, { status: 500 });
   }
 }

@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-// Define aquí los CIDs de las imágenes que subiste a Pinata
 const levelImages: { [key: number]: string } = {
   1: "ipfs://bafybeiakfsnmcuqenkwsbhtpi4mh5dq62aho3g2svww5hfw5b4lodgfh3m",
   2: "ipfs://bafybeic3rbxwu4tnhiozdpaorom4fk5aj2ue3utwgbxcfnyqtweoy2e4d4",
@@ -19,22 +18,20 @@ export async function GET(request: Request, context: RouteContext) {
   const level = parseInt(params.level, 10);
 
   if (isNaN(level) || !levelImages[level]) {
-    return NextResponse.json({ error: "Nivel inválido o no encontrado" }, { status: 404 });
+    return NextResponse.json({ error: "Invalid or unknown level" }, { status: 404 });
   }
 
   const imageUrl = levelImages[level];
 
-  // Construimos el objeto de metadatos estándar de ERC721
   const metadata = {
-    name: `SocialDrop NFT - Nivel ${level}`,
-    description: "Un NFT exclusivo de SocialDrop que evoluciona con tu influencia.",
+    name: `SocialDrop NFT - Level ${level}`,
+    description: "An exclusive SocialDrop NFT that evolves with your influence.",
     image: imageUrl,
     attributes: [
       {
-        trait_type: "Nivel",
+        trait_type: "Level",
         value: level,
       },
-      // TODO: Se van añadir más atributos aquí
     ],
   };
 

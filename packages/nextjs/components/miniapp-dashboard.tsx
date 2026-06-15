@@ -44,16 +44,16 @@ export default function MiniAppDashboard() {
           if (data.error) throw new Error(data.error);
           setCampaignData(data);
         })
-        .catch(err => toast.error(`No se pudo cargar la campaña. ${err}`))
+        .catch(err => toast.error(`Could not load campaign. ${err}`))
         .finally(() => setIsLoading(false));
     }
   }, [campaignId]);
 
   const handleClaim = async () => {
-    if (!user?.fid) return toast.error("Usuario de Farcaster no encontrado.");
+    if (!user?.fid) return toast.error("Farcaster user not found.");
 
     setIsClaiming(true);
-    const toastId = toast.loading("Reclamando tu NFT...");
+    const toastId = toast.loading("Claiming your NFT...");
 
     try {
       const response = await fetch("/api/claim", {
@@ -63,10 +63,10 @@ export default function MiniAppDashboard() {
       });
 
       const result = await response.json();
-      if (!response.ok) throw new Error(result.message || "Falló el reclamo.");
+      if (!response.ok) throw new Error(result.message || "Claim failed.");
 
       toast.dismiss(toastId);
-      toast.success("¡NFT reclamado con éxito!");
+      toast.success("NFT claimed successfully!");
 
       const metadataResponse = await fetch(`/api/metadata/1`);
       const metadata = await metadataResponse.json();
@@ -85,16 +85,15 @@ export default function MiniAppDashboard() {
     }
   };
 
-  if (isLoading) return <div className="flex items-center justify-center min-h-screen text-white">Cargando...</div>;
-  if (!campaignData) return <div className="p-4 text-center text-white">No se encontró la campaña.</div>;
+  if (isLoading) return <div className="flex items-center justify-center min-h-screen text-white">Loading...</div>;
+  if (!campaignData) return <div className="p-4 text-center text-white">Campaign not found.</div>;
 
-  // --- EL NUEVO JSX MEJORADO ---
   return (
     <div className="flex flex-col justify-between min-h-screen p-6 text-white text-center">
       <div className="flex-grow flex flex-col items-center justify-center">
         <h1 className="text-4xl font-bold">{campaignData?.name}</h1>
         <p className="mt-2 text-gray-400">
-          {campaignData?.progress} / {campaignData?.total} reclamados
+          {campaignData?.progress} / {campaignData?.total} claimed
         </p>
         <progress
           className="progress progress-primary w-full mt-4"
@@ -106,7 +105,7 @@ export default function MiniAppDashboard() {
       <div className="flex-shrink-0">
         {mintedNFT ? (
           <div className="flex flex-col items-center">
-            <h2 className="font-bold mb-4">¡Felicidades! Aquí está tu NFT:</h2>
+            <h2 className="font-bold mb-4">Congratulations! Here&apos;s your NFT:</h2>
             <img src={mintedNFT.image} alt={mintedNFT.name} className="w-48 h-48 rounded-lg border-2 border-primary" />
             <p className="mt-2 font-bold">{mintedNFT.name}</p>
             <a
@@ -115,15 +114,23 @@ export default function MiniAppDashboard() {
               rel="noopener noreferrer"
               className="btn btn-secondary btn-outline w-full mt-4"
             >
-              Ver en Basescan
+              View on Basescan
             </a>
+            <div className="mt-4 p-3 bg-base-200 rounded-lg">
+              <p className="text-sm opacity-70">
+                Your NFT is at Level 1. Post a cast promoting this campaign and register it to start competing!
+              </p>
+              <a href={`/duel/${campaignId}`} className="btn btn-accent btn-sm mt-2">
+                Enter War of Influence
+              </a>
+            </div>
           </div>
         ) : (
           <button className="btn btn-primary btn-lg w-full" onClick={handleClaim} disabled={isClaiming || !user}>
-            {isClaiming ? "Reclamando..." : "🎁 Reclamar mi NFT"}
+            {isClaiming ? "Claiming..." : "Claim my NFT"}
           </button>
         )}
-        {user && <p className="mt-4 text-xs text-gray-500">Conectado como: @{user.username}</p>}
+        {user && <p className="mt-4 text-xs text-gray-500">Connected as: @{user.username}</p>}
       </div>
     </div>
   );

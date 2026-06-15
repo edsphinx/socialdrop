@@ -10,7 +10,6 @@ export default function MyClaimsPage() {
   const [isLoadingCampaigns, setIsLoadingCampaigns] = useState(true);
 
   useEffect(() => {
-    // Solo hacemos la llamada si tenemos el FID del usuario
     if (user?.fid) {
       setIsLoadingCampaigns(true);
       fetch(`/api/my-claims?fid=${user.fid}`)
@@ -42,10 +41,10 @@ export default function MyClaimsPage() {
             <div key={campaign.id} className="card bg-base-100 shadow-md">
               <div className="card-body">
                 <h3 className="card-title">{campaign.name}</h3>
-                <p>¡Has cumplido los requisitos! Reclama tu NFT ahora.</p>
+                <p>You&apos;ve met the requirements! Claim your NFT now.</p>
                 <div className="card-actions justify-end">
                   <Link href={`/c/${campaign.id}`} passHref>
-                    <button className="btn btn-primary btn-sm">Ir a Reclamar</button>
+                    <button className="btn btn-primary btn-sm">Go to Claim</button>
                   </Link>
                 </div>
               </div>
@@ -54,9 +53,9 @@ export default function MyClaimsPage() {
         </div>
       ) : (
         <div className="text-center">
-          <p>No tienes reclamos pendientes.</p>
+          <p>You have no pending claims.</p>
           <p className="text-sm text-gray-400 mt-2">
-            ¡Busca nuevas campañas en Farcaster y dales &apos;like&apos; para ser elegible!
+            Find new campaigns on Farcaster and like them to become eligible!
           </p>
         </div>
       )}

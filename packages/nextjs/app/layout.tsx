@@ -4,7 +4,7 @@ import "~~/styles/globals.css";
 
 export const metadata: Metadata = {
   title: "SocialDrop",
-  description: "Retos y airdrops de NFTs evolutivos en Farcaster",
+  description: "Engagement-driven NFT airdrops on Farcaster",
 };
 
 const miniAppConfig = {
@@ -12,10 +12,10 @@ const miniAppConfig = {
   imageUrl: "https://socialdrop.live/og-image.png",
   buttons: [
     {
-      title: "💧 Inicia SocialDrop",
+      title: "Launch SocialDrop",
       action: {
         type: "launch_miniapp",
-        name: "Lanza SocialDrop",
+        name: "Launch SocialDrop",
         url: "https://socialdrop.live/",
         splashImageUrl: "https://socialdrop.live/og-image.png",
         splashBackgroundColor: "#101010",
@@ -32,7 +32,7 @@ const SocialDropApp = ({ children }: { children: React.ReactNode }) => {
         <meta property="fc:frame" content="vNext" />
         <meta property="fc:frame:image" content="https://socialdrop.live/og-image.png" />
         <meta property="fc:frame:post_url" content="https://socialdrop.live/api/frame" />
-        <meta property="fc:frame:button:1" content="Lanza SocialDrop" />
+        <meta property="fc:frame:button:1" content="Launch SocialDrop" />
       </head>
       <body>
         <ScaffoldEthAppWithProviders>{children}</ScaffoldEthAppWithProviders>
