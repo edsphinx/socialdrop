@@ -7,7 +7,7 @@ export async function GET() {
       prisma.campaigns.count(),
       prisma.campaigns.count({ where: { is_active: true } }),
       prisma.nfts_minted.count(),
-      prisma.nfts_minted.groupBy({ by: ["recipient_address"], _count: true }).then(r => r.length),
+      prisma.nfts_minted.groupBy({ by: ["recipient_address"], _count: true }).then((r: unknown[]) => r.length),
       prisma.gamification_scores.count(),
     ]);
 

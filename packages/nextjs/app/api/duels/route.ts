@@ -25,14 +25,16 @@ export async function GET() {
     });
 
     // Extract FIDs to fetch their profiles
-    const duelistFids = topScores.map(score => score.nft_holder_fid).filter((fid): fid is number => fid !== null);
+    const duelistFids = topScores
+      .map((score: (typeof topScores)[number]) => score.nft_holder_fid)
+      .filter((fid: number | null): fid is number => fid !== null);
 
     let duels: Duel[] = [];
     if (duelistFids.length > 0) {
       const usersResponse = await personalNeynarClient.fetchBulkUsers({ fids: duelistFids });
       const usersMap = new Map(usersResponse.users.map(user => [user.fid, user]));
 
-      duels = topScores.map(score => {
+      duels = topScores.map((score: (typeof topScores)[number]) => {
         const user = usersMap.get(score.nft_holder_fid!);
         return {
           id: score.id,

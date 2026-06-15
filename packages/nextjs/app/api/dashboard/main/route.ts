@@ -26,7 +26,7 @@ export async function GET() {
       },
     });
 
-    const featuredDuels = topScores.map(score => ({
+    const featuredDuels = topScores.map((score: (typeof topScores)[number]) => ({
       id: score.id,
       name: `Influencer FID #${score.nft_holder_fid}`,
       score: score.score,
