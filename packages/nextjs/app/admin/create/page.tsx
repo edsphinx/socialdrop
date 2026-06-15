@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import RangeSlider from "react-range-slider-input";
 import "react-range-slider-input/dist/style.css";
-import { useFarcaster } from "~~/hooks/useFarcaster";
+import { useFarcaster } from "@/hooks/useFarcaster";
 
 type FarcasterUser = {
   fid?: number;

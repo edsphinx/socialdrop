@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EVOLUTION_THRESHOLDS, MAX_LEVEL, checkEvolution } from "~~/lib/evolution";
+import { EVOLUTION_THRESHOLDS, MAX_LEVEL, checkEvolution } from "@/lib/evolution";
 
 describe("EVOLUTION_THRESHOLDS", () => {
   it("defines threshold for level 2 at 10 likes", () => {

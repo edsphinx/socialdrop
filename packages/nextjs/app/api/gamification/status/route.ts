@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "~~/lib/clients/prisma";
-import { getLevelOf } from "~~/services/blockchain.service";
-import { getCastLikesCount, getUserDataFromFid } from "~~/services/neynar.service";
+import prisma from "@/lib/clients/prisma";
+import { getLevelOf } from "@/services/blockchain.service";
+import { getCastLikesCount, getUserDataFromFid } from "@/services/neynar.service";
 
 const LEVEL_IMAGES: Record<number, string> = {
   1: "https://ipfs.io/ipfs/bafybeiakfsnmcuqenkwsbhtpi4mh5dq62aho3g2svww5hfw5b4lodgfh3m",

@@ -1,28 +1,28 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { POST } from "~~/app/api/webhooks/neynar/route";
-import { verifyWebhookSignature } from "~~/lib/webhook-verify";
-import * as blockchain from "~~/services/blockchain.service";
-import * as db from "~~/services/database.service";
-import * as neynar from "~~/services/neynar.service";
+import { POST } from "@/app/api/webhooks/neynar/route";
+import { verifyWebhookSignature } from "@/lib/webhook-verify";
+import * as blockchain from "@/services/blockchain.service";
+import * as db from "@/services/database.service";
+import * as neynar from "@/services/neynar.service";
 
 // Mock all external services before importing the route
-vi.mock("~~/services/database.service", () => ({
+vi.mock("@/services/database.service", () => ({
   findCampaignByCastHash: vi.fn(),
   hasUserMinted: vi.fn(),
   getMintCount: vi.fn(),
   recordMint: vi.fn(),
 }));
 
-vi.mock("~~/services/blockchain.service", () => ({
+vi.mock("@/services/blockchain.service", () => ({
   mintNFT: vi.fn(),
 }));
 
-vi.mock("~~/services/neynar.service", () => ({
+vi.mock("@/services/neynar.service", () => ({
   getUserDataFromFid: vi.fn(),
   publishCast: vi.fn(),
 }));
 
-vi.mock("~~/lib/webhook-verify", () => ({
+vi.mock("@/lib/webhook-verify", () => ({
   verifyWebhookSignature: vi.fn(),
 }));
 

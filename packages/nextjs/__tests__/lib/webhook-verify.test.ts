@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { describe, expect, it } from "vitest";
-import { verifyWebhookSignature } from "~~/lib/webhook-verify";
+import { verifyWebhookSignature } from "@/lib/webhook-verify";
 
 function sign(body: string, secret: string): string {
   return crypto.createHmac("sha512", secret).update(body).digest("hex");

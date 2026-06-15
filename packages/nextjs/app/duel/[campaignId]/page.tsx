@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { ArrowPathIcon, FireIcon, TrophyIcon } from "@heroicons/react/24/solid";
-import { useFarcaster } from "~~/hooks/useFarcaster";
+import { useFarcaster } from "@/hooks/useFarcaster";
 
 interface NftStatus {
   tokenId: number;

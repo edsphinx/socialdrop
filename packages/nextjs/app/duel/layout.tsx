@@ -1,5 +1,5 @@
 import React from "react";
-import { MiniAppHeader } from "~~/components/MiniAppHeader";
+import { MiniAppHeader } from "@/components/MiniAppHeader";
 
 export default function DuelsLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { ScaffoldEthAppWithProviders } from "~~/components/ScaffoldEthAppWithProviders";
-import "~~/styles/globals.css";
+import { ScaffoldEthAppWithProviders } from "@/components/ScaffoldEthAppWithProviders";
+import "@/styles/globals.css";
 
 export const metadata: Metadata = {
   title: "SocialDrop",

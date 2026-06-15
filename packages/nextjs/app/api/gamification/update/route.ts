@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkEvolution } from "~~/lib/evolution";
-import * as blockchain from "~~/services/blockchain.service";
-import * as db from "~~/services/database.service";
-import { getCastLikesCount, getUserDataFromFid, publishCast } from "~~/services/neynar.service";
+import { checkEvolution } from "@/lib/evolution";
+import * as blockchain from "@/services/blockchain.service";
+import * as db from "@/services/database.service";
+import { getCastLikesCount, getUserDataFromFid, publishCast } from "@/services/neynar.service";
 
 export async function POST(request: NextRequest) {
   try {

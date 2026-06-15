@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "~~/lib/clients/prisma";
-import { publishCast } from "~~/services/neynar.service";
+import prisma from "@/lib/clients/prisma";
+import { publishCast } from "@/services/neynar.service";
 
 export async function POST(request: NextRequest) {
   try {

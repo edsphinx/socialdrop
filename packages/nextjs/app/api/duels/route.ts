@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { personalNeynarClient } from "~~/lib/clients/neynar";
-import prisma from "~~/lib/clients/prisma";
+import { personalNeynarClient } from "@/lib/clients/neynar";
+import prisma from "@/lib/clients/prisma";
 
 interface Duel {
   id: number;

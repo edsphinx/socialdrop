@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "~~/lib/clients/prisma";
-import { hasUserMinted } from "~~/services/database.service";
-import { didUserLikeCast, getUserDataFromFid } from "~~/services/neynar.service";
+import prisma from "@/lib/clients/prisma";
+import { hasUserMinted } from "@/services/database.service";
+import { didUserLikeCast, getUserDataFromFid } from "@/services/neynar.service";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

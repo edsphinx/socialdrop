@@ -1,7 +1,7 @@
 import { createPublicClient, createWalletClient, decodeEventLog, http, publicActions } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { baseSepolia } from "viem/chains";
-import deployedContracts from "~~/contracts/deployedContracts";
+import deployedContracts from "@/contracts/deployedContracts";
 
 const chain = baseSepolia;
 const chainId = chain.id;

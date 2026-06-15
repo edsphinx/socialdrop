@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useFarcaster } from "~~/hooks/useFarcaster";
+import { useFarcaster } from "@/hooks/useFarcaster";
 
 export default function MyClaimsPage() {
   const { user, isLoading: isUserLoading } = useFarcaster();
