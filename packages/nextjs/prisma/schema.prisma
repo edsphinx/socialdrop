@@ -33,13 +33,20 @@ model campaigns {
   gamification_scores gamification_scores[]
 }
 
+enum MintStatus {
+  pending
+  minted
+  failed
+}
+
 // MINTED NFTS MODEL
 // Records each NFT that has been delivered to prevent duplicates.
 model nfts_minted {
-  id                Int      @id @default(autoincrement())
-  token_id          Int
+  id                Int        @id @default(autoincrement())
+  token_id          Int?
+  status            MintStatus @default(pending)
   recipient_address String
-  minted_at         DateTime @default(now())
+  minted_at         DateTime   @default(now())
 
   user_fid          Int?
   level             Int      @default(1) // Current NFT level

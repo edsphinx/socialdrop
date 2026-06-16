@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
+import { sdk } from "@farcaster/miniapp-sdk";
 import toast from "react-hot-toast";
 import { ArrowPathIcon, FireIcon, TrophyIcon } from "@heroicons/react/24/solid";
 import { useFarcaster } from "@/hooks/useFarcaster";
@@ -94,10 +95,10 @@ export default function DuelPage() {
 
     setIsRegistering(true);
     try {
-      const res = await fetch("/api/gamification/register", {
+      const res = await sdk.quickAuth.fetch("/api/gamification/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userFid: fid, campaignId, castHash: castHash.trim() }),
+        body: JSON.stringify({ campaignId, castHash: castHash.trim() }),
       });
       const data = await res.json();
 
@@ -122,10 +123,10 @@ export default function DuelPage() {
     setIsRefreshing(true);
     const toastId = toast.loading("Updating score...");
     try {
-      const res = await fetch("/api/gamification/update", {
+      const res = await sdk.quickAuth.fetch("/api/gamification/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userFid: fid, campaignId }),
+        body: JSON.stringify({ campaignId }),
       });
       const data = await res.json();
       toast.dismiss(toastId);

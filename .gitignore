@@ -21,3 +21,6 @@ node_modules
 
 # cli
 dist
+
+# brainstorm visual-companion mockups (local only)
+.superpowers/

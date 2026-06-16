@@ -28,9 +28,11 @@ export async function GET(request: NextRequest) {
 
     // 1. Find user's NFT for this campaign
     const userMint = await prisma.nfts_minted.findFirst({
-      where: { recipient_address: userAddress, campaign_id: campaignId },
+      where: { recipient_address: userAddress, campaign_id: campaignId, status: "minted" },
     });
-    if (!userMint) return NextResponse.json({ error: "NFT not found for this user and campaign" }, { status: 404 });
+    if (!userMint || userMint.token_id === null) {
+      return NextResponse.json({ error: "NFT not found for this user and campaign" }, { status: 404 });
+    }
 
     // 2. Find their gamification entry
     const gameScore = await prisma.gamification_scores.findFirst({

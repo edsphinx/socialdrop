@@ -1,20 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
+import { UnauthorizedError, getVerifiedFid } from "@/lib/auth/getVerifiedFid";
 import { checkEvolution } from "@/lib/evolution";
+import { checkRateLimit } from "@/lib/ratelimit";
+import { getSocialDataProvider } from "@/lib/social";
+import { gamificationUpdateSchema } from "@/lib/validation/schemas";
 import * as blockchain from "@/services/blockchain.service";
 import * as db from "@/services/database.service";
-import { getCastLikesCount, getUserDataFromFid, publishCast } from "@/services/neynar.service";
 
 export async function POST(request: NextRequest) {
+  let userFid: number;
   try {
-    const body = await request.json();
-    const { userFid, campaignId } = body;
-
-    if (!userFid || !campaignId) {
-      return NextResponse.json({ error: "userFid and campaignId are required." }, { status: 400 });
+    userFid = await getVerifiedFid(request);
+  } catch (e) {
+    if (e instanceof UnauthorizedError) {
+      return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
     }
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+
+  if (!(await checkRateLimit(`fid:${userFid}`)))
+    return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+
+  try {
+    const parsed = gamificationUpdateSchema.safeParse(await request.json());
+    if (!parsed.success) return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    const { campaignId } = parsed.data;
+
+    const social = getSocialDataProvider();
 
     // 1. Get user's wallet address
-    const userData = await getUserDataFromFid(userFid);
+    const userData = await social.getUserByFid(userFid);
     if (!userData?.address) {
       return NextResponse.json({ error: "Could not find user wallet." }, { status: 404 });
     }
@@ -26,16 +41,17 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Fetch real-time like count from Neynar
-    const score = await getCastLikesCount(gameScore.tracked_cast_hash);
+    const score = await social.getCastLikesCount(gameScore.tracked_cast_hash);
 
     // 4. Update score in DB
     await db.updateGamificationScore(gameScore.id, score);
 
     // 5. Check evolution thresholds
     const userMint = await db.findUserMint(campaignId, userData.address);
-    if (!userMint) {
+    if (!userMint || userMint.token_id === null) {
       return NextResponse.json({ score, level: 1, evolved: false });
     }
+    const userMintTokenId = userMint.token_id;
 
     const currentLevel = userMint.level;
     const targetLevel = checkEvolution(currentLevel, score);
@@ -49,7 +65,7 @@ export async function POST(request: NextRequest) {
       let allSucceeded = true;
 
       for (let i = 0; i < levelsToAdvance; i++) {
-        const result = await blockchain.evolveNFT(userMint.token_id);
+        const result = await blockchain.evolveNFT(userMintTokenId);
         if (!result.success) {
           // Partial evolution: save whatever level we reached
           newLevel = currentLevel + i;
@@ -69,7 +85,7 @@ export async function POST(request: NextRequest) {
         // Publish celebration cast
         const campaign = await db.findCampaignById(campaignId);
         const campaignName = campaign?.name || "a SocialDrop campaign";
-        await publishCast(
+        await social.publishCast(
           `@${userData.username}'s NFT just evolved to Level ${newLevel} in "${campaignName}"! The War of Influence continues.`,
           {
             embeds: [{ url: `${process.env.NEXT_PUBLIC_URL || "https://socialdrop.live"}/duel/${campaignId}` }],

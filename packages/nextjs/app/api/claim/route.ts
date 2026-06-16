@@ -1,25 +1,37 @@
 import { NextResponse } from "next/server";
+import { UnauthorizedError, getVerifiedFid } from "@/lib/auth/getVerifiedFid";
+import { checkRateLimit } from "@/lib/ratelimit";
+import { getSocialDataProvider } from "@/lib/social";
+import { claimSchema } from "@/lib/validation/schemas";
 import * as blockchain from "@/services/blockchain.service";
 import * as db from "@/services/database.service";
-import * as neynar from "@/services/neynar.service";
 
 export async function POST(request: Request) {
+  let userFid: number;
   try {
-    const body = await request.json();
-    if (!body) {
-      return new NextResponse("Invalid request body.", { status: 400 });
+    userFid = await getVerifiedFid(request);
+  } catch (e) {
+    if (e instanceof UnauthorizedError) {
+      return NextResponse.json({ success: false, message: "Unauthorized." }, { status: 401 });
     }
+    return NextResponse.json({ success: false, message: "Internal server error." }, { status: 500 });
+  }
 
-    const { userFid, campaignId } = body;
+  if (!(await checkRateLimit(`fid:${userFid}`)))
+    return NextResponse.json({ success: false, message: "Too many requests." }, { status: 429 });
 
-    if (!userFid) {
-      return new NextResponse("Invalid request body.", { status: 400 });
-    }
+  try {
+    const parsed = claimSchema.safeParse(await request.json());
+    if (!parsed.success)
+      return NextResponse.json({ success: false, message: "Invalid request body." }, { status: 400 });
+    const { campaignId } = parsed.data;
+
+    const social = getSocialDataProvider();
 
     const campaign = await db.findCampaignById(campaignId);
     if (!campaign) return NextResponse.json({ success: false, message: "Campaign not found." }, { status: 404 });
 
-    const userData = await neynar.getUserDataFromFid(userFid);
+    const userData = await social.getUserByFid(userFid);
     if (!userData) return NextResponse.json({ success: false, message: "Farcaster user not found." }, { status: 404 });
     const { address: recipientAddress, username } = userData;
 
@@ -29,11 +41,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "Campaign has reached its mint limit." }, { status: 409 });
     }
 
-    if (await db.hasUserMinted(campaign.id, recipientAddress)) {
-      return NextResponse.json({ success: false, message: "You have already claimed this NFT." }, { status: 409 });
-    }
-
-    const hasLiked = await neynar.didUserLikeCast(userFid, campaign.target_cast_hash);
+    const hasLiked = await social.didUserLikeCast(userFid, campaign.target_cast_hash);
     if (!hasLiked) {
       return NextResponse.json(
         { success: false, message: "You must like the original cast to claim." },
@@ -41,16 +49,24 @@ export async function POST(request: Request) {
       );
     }
 
-    // --- Minting ---
+    // --- Minting (reserve-before-mint to close the claim race) ---
+    let reservation;
+    try {
+      reservation = await db.reserveMint(campaign.id, recipientAddress, userFid);
+    } catch (e: any) {
+      if (e?.code === "P2002")
+        return NextResponse.json({ success: false, message: "You have already claimed this NFT." }, { status: 409 });
+      throw e;
+    }
     const mintResult = await blockchain.mintNFT(recipientAddress as `0x${string}`);
     if (!mintResult.success) {
+      await db.failMint(reservation.id);
       throw new Error("Mint transaction failed.");
     }
-
-    await db.recordMint(campaign.id, mintResult.tokenId, recipientAddress, userFid);
+    await db.finalizeMint(reservation.id, mintResult.tokenId);
 
     const castText = `🎉 @${username} just claimed NFT #${mintResult.tokenId} from the "${campaign.name}" drop!`;
-    await neynar.publishCast(castText);
+    await social.publishCast(castText);
 
     return NextResponse.json({
       success: true,
