@@ -33,8 +33,8 @@ describe("verifyWebhookSignature", () => {
     expect(verifyWebhookSignature(body, null, secret)).toBe(false);
   });
 
-  it("returns true when no secret is configured (dev mode)", () => {
-    expect(verifyWebhookSignature(body, null, undefined)).toBe(true);
+  it("fails closed when no secret is configured", () => {
+    expect(verifyWebhookSignature("body", "sig", undefined)).toBe(false);
   });
 
   it("returns false for empty signature string", () => {

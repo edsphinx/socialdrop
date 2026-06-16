@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import Farcaster from "@farcaster/miniapp-sdk";
+import Farcaster, { sdk } from "@farcaster/miniapp-sdk";
 import toast from "react-hot-toast";
 
 type FarcasterUser = Awaited<typeof Farcaster.context>["user"];
@@ -57,10 +57,10 @@ export default function MiniAppDashboard() {
     const toastId = toast.loading("Claiming your NFT...");
 
     try {
-      const response = await fetch("/api/claim", {
+      const response = await sdk.quickAuth.fetch("/api/claim", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userFid: user.fid, campaignId: campaignId }),
+        body: JSON.stringify({ campaignId: campaignId }),
       });
 
       const result = await response.json();

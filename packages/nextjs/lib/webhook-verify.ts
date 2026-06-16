@@ -7,8 +7,8 @@ import crypto from "crypto";
 export function verifyWebhookSignature(body: string, signature: string | null, secret?: string): boolean {
   const webhookSecret = secret ?? process.env.NEYNAR_WEBHOOK_SECRET;
   if (!webhookSecret) {
-    console.warn("NEYNAR_WEBHOOK_SECRET not set, skipping signature verification");
-    return true;
+    console.error("NEYNAR_WEBHOOK_SECRET not set, rejecting webhook request");
+    return false;
   }
   if (!signature) return false;
   const hmac = crypto.createHmac("sha512", webhookSecret);
