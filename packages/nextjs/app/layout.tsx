@@ -40,7 +40,7 @@ const miniAppConfig = {
 
 const SocialDropApp = ({ children }: { children: React.ReactNode }) => {
   return (
-    <html suppressHydrationWarning className={`${interTight.variable} ${doto.variable}`} data-theme="dark">
+    <html suppressHydrationWarning className={`${interTight.variable} ${doto.variable}`}>
       <head>
         <meta property="fc:miniapp" content={JSON.stringify(miniAppConfig)} />
         <meta property="fc:frame" content="vNext" />

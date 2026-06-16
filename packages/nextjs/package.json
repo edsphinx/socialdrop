@@ -35,7 +35,6 @@
     "burner-connector": "0.0.18",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "daisyui": "5.0.9",
     "framer-motion": "^12.40.0",
     "kubo-rpc-client": "~5.0.2",
     "next": "~15.5.19",
