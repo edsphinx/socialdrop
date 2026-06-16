@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import * as blockchain from "~~/services/blockchain.service";
-import * as db from "~~/services/database.service";
-import * as neynar from "~~/services/neynar.service";
+import * as blockchain from "@/services/blockchain.service";
+import * as db from "@/services/database.service";
+import * as neynar from "@/services/neynar.service";
 
 export async function POST(request: Request) {
   try {

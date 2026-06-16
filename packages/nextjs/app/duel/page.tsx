@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { FireIcon, TrophyIcon } from "@heroicons/react/24/outline";
+import { TrophyIcon } from "@heroicons/react/24/outline";
 
 const DuelListItem = ({ duel }: { duel: any }) => (
   <Link
@@ -62,11 +62,6 @@ export default function DuelsPage() {
     <div className="p-4 md:p-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <h1 className="text-3xl font-bold">Duels Arena</h1>
-        <Link href="/duel/1" passHref>
-          <button className="btn btn-secondary mt-4 md:mt-0">
-            <FireIcon className="h-5 w-5" /> My Active Duels
-          </button>
-        </Link>
       </div>
 
       <div className="space-y-4">

@@ -1,4 +1,4 @@
-import prisma from "~~/lib/clients/prisma";
+import prisma from "@/lib/clients/prisma";
 
 export async function findCampaignByCastHash(castHash: string) {
   return await prisma.campaigns.findUnique({

@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { POST } from "~~/app/api/gamification/update/route";
-import * as blockchain from "~~/services/blockchain.service";
-import * as db from "~~/services/database.service";
-import { getCastLikesCount, getUserDataFromFid, publishCast } from "~~/services/neynar.service";
+import { POST } from "@/app/api/gamification/update/route";
+import * as blockchain from "@/services/blockchain.service";
+import * as db from "@/services/database.service";
+import { getCastLikesCount, getUserDataFromFid, publishCast } from "@/services/neynar.service";
 
-vi.mock("~~/services/database.service", () => ({
+vi.mock("@/services/database.service", () => ({
   findGamificationEntry: vi.fn(),
   updateGamificationScore: vi.fn(),
   findUserMint: vi.fn(),
@@ -12,11 +12,11 @@ vi.mock("~~/services/database.service", () => ({
   findCampaignById: vi.fn(),
 }));
 
-vi.mock("~~/services/blockchain.service", () => ({
+vi.mock("@/services/blockchain.service", () => ({
   evolveNFT: vi.fn(),
 }));
 
-vi.mock("~~/services/neynar.service", () => ({
+vi.mock("@/services/neynar.service", () => ({
   getUserDataFromFid: vi.fn(),
   getCastLikesCount: vi.fn(),
   publishCast: vi.fn(),

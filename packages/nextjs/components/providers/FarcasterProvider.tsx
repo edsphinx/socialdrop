@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Farcaster from "@farcaster/miniapp-sdk";
-import { FarcasterContext } from "~~/hooks/useFarcaster";
+import { FarcasterContext } from "@/hooks/useFarcaster";
 
 type FarcasterUser = Awaited<typeof Farcaster.context>["user"];
 

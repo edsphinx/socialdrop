@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { POST } from "~~/app/api/gamification/register/route";
-import * as db from "~~/services/database.service";
-import * as neynar from "~~/services/neynar.service";
+import { POST } from "@/app/api/gamification/register/route";
+import * as db from "@/services/database.service";
+import * as neynar from "@/services/neynar.service";
 
-vi.mock("~~/services/database.service", () => ({
+vi.mock("@/services/database.service", () => ({
   findUserMint: vi.fn(),
   registerForGamification: vi.fn(),
 }));
 
-vi.mock("~~/services/neynar.service", () => ({
+vi.mock("@/services/neynar.service", () => ({
   getUserDataFromFid: vi.fn(),
   getCastLikesCount: vi.fn(),
 }));

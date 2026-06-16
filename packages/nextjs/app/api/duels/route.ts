@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { personalNeynarClient } from "~~/lib/clients/neynar";
-import prisma from "~~/lib/clients/prisma";
+import { personalNeynarClient } from "@/lib/clients/neynar";
+import prisma from "@/lib/clients/prisma";
 
 interface Duel {
   id: number;
@@ -39,7 +39,7 @@ export async function GET() {
         return {
           id: score.id,
           name: user ? `@${user.username}` : `Influencer FID #${score.nft_holder_fid}`,
-          pfpUrl: user?.pfp_url || "https://placehold.co/64",
+          pfpUrl: user?.pfp_url || "/default-avatar.svg",
           score: score.score,
           campaignId: score.campaign.id,
           campaignName: score.campaign.name,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import * as db from "~~/services/database.service";
-import { getCastLikesCount, getUserDataFromFid } from "~~/services/neynar.service";
+import * as db from "@/services/database.service";
+import { getCastLikesCount, getUserDataFromFid } from "@/services/neynar.service";
 
 export async function POST(request: NextRequest) {
   try {

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { verifyWebhookSignature } from "~~/lib/webhook-verify";
-import * as blockchain from "~~/services/blockchain.service";
-import * as db from "~~/services/database.service";
-import * as neynar from "~~/services/neynar.service";
+import { verifyWebhookSignature } from "@/lib/webhook-verify";
+import * as blockchain from "@/services/blockchain.service";
+import * as db from "@/services/database.service";
+import * as neynar from "@/services/neynar.service";
 
 export async function POST(request: Request) {
   try {

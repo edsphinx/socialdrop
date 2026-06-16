@@ -1,37 +1,19 @@
-import { wagmiConnectors } from "./wagmiConnectors";
-import { Chain, createClient, fallback, http } from "viem";
-import { hardhat, mainnet } from "viem/chains";
-import { createConfig } from "wagmi";
-import scaffoldConfig, { DEFAULT_ALCHEMY_API_KEY, ScaffoldConfig } from "~~/scaffold.config";
-import { getAlchemyHttpUrl } from "~~/utils/scaffold-eth";
+import { createConfig, http } from "wagmi";
+import { baseSepolia } from "wagmi/chains";
+import { coinbaseWallet, injected } from "wagmi/connectors";
 
-const { targetNetworks } = scaffoldConfig;
-
-// We always want to have mainnet enabled (ENS resolution, ETH price, etc). But only once.
-export const enabledChains = targetNetworks.find((network: Chain) => network.id === 1)
-  ? targetNetworks
-  : ([...targetNetworks, mainnet] as const);
+// No hardcoded/shared WalletConnect project id is ever shipped (rate-limit + ToS risk).
+// WalletConnect is intentionally omitted: in the Farcaster / Base App Mini App context the
+// wallet is provided by the host, and standalone web is covered by injected (MetaMask, etc.)
+// and Coinbase Wallet. The WalletConnect connector also accesses `indexedDB` during SSR
+// prerender, which crashes the production build — another reason to keep it out until it can
+// be added client-only. See docs/superpowers for the relaunch plan.
 
 export const wagmiConfig = createConfig({
-  chains: enabledChains,
-  connectors: wagmiConnectors(),
-  ssr: true,
-  client: ({ chain }) => {
-    let rpcFallbacks = [http()];
-    const rpcOverrideUrl = (scaffoldConfig.rpcOverrides as ScaffoldConfig["rpcOverrides"])?.[chain.id];
-    if (rpcOverrideUrl) {
-      rpcFallbacks = [http(rpcOverrideUrl), http()];
-    } else {
-      const alchemyHttpUrl = getAlchemyHttpUrl(chain.id);
-      if (alchemyHttpUrl) {
-        const isUsingDefaultKey = scaffoldConfig.alchemyApiKey === DEFAULT_ALCHEMY_API_KEY;
-        rpcFallbacks = isUsingDefaultKey ? [http(), http(alchemyHttpUrl)] : [http(alchemyHttpUrl), http()];
-      }
-    }
-    return createClient({
-      chain,
-      transport: fallback(rpcFallbacks),
-      ...(chain.id !== (hardhat as Chain).id ? { pollingInterval: scaffoldConfig.pollingInterval } : {}),
-    });
+  chains: [baseSepolia],
+  connectors: [injected(), coinbaseWallet({ appName: "SocialDrop" })],
+  transports: {
+    [baseSepolia.id]: http(process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org"),
   },
+  ssr: true,
 });

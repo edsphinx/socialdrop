@@ -93,7 +93,7 @@ graph TD
 
 | Layer | Technology | Why |
 |-------|-----------|-----|
-| **Frontend** | Next.js App Router, scaffold-eth-2, wagmi | Fast, type-safe UI with native wallet integration |
+| **Frontend** | Next.js App Router, wagmi/viem, RainbowKit | Fast, type-safe UI with native wallet integration |
 | **Backend** | Next.js API Routes on Vercel | Serverless, auto-scaling infrastructure |
 | **Database** | Supabase/Postgres with Prisma ORM | Reliable, type-safe data access |
 | **Blockchain** | Solidity on Base, Viem | Low gas costs (~$0.001/tx), growing social ecosystem |

@@ -1,4 +1,4 @@
-import { personalNeynarClient } from "~~/lib/clients/neynar";
+import { personalNeynarClient } from "@/lib/clients/neynar";
 
 interface CastOptions {
   embeds?: { url: string }[];

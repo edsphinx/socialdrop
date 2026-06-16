@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { ArrowPathIcon, FireIcon, TrophyIcon } from "@heroicons/react/24/solid";
-import { useFarcaster } from "~~/hooks/useFarcaster";
+import { useFarcaster } from "@/hooks/useFarcaster";
 
 interface NftStatus {
   tokenId: number;
@@ -39,9 +39,7 @@ export default function DuelPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const getUserFid = useCallback(() => {
-    if (user?.fid) return user.fid;
-    if (process.env.NODE_ENV === "development") return 20039;
-    return null;
+    return user?.fid ?? null;
   }, [user]);
 
   const fetchData = useCallback(async () => {

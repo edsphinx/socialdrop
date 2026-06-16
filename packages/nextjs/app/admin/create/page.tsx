@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import RangeSlider from "react-range-slider-input";
 import "react-range-slider-input/dist/style.css";
-import { useFarcaster } from "~~/hooks/useFarcaster";
+import { useFarcaster } from "@/hooks/useFarcaster";
 
 type FarcasterUser = {
   fid?: number;
@@ -33,7 +33,7 @@ const CampaignPreviewCard = ({
         <div className="flex items-center space-x-3">
           <div className="avatar">
             <div className="mask mask-squircle w-12 h-12">
-              <Image src={user?.pfp_url || "https://placehold.co/64"} alt="Avatar" width={48} height={48} unoptimized />
+              <Image src={user?.pfp_url || "/default-avatar.svg"} alt="Avatar" width={48} height={48} unoptimized />
             </div>
           </div>
           <div>
@@ -43,14 +43,9 @@ const CampaignPreviewCard = ({
         </div>
         <p className="mt-4 break-words">{castContent || "Claim this exclusive NFT by liking my cast!"}</p>
         <div className="card bg-base-100 shadow-md mt-4">
-          <figure>
-            <Image
-              src={`https://placehold.co/600x400/101010/FFF?text=Your+NFT\\n(${nftCount}+Editions)`}
-              alt="NFT Preview"
-              width={600}
-              height={400}
-            />
-          </figure>
+          <div className="flex items-center justify-center w-full aspect-[3/2] bg-base-300 text-base-content/60 text-center rounded">
+            Your NFT ({nftCount} Editions)
+          </div>
         </div>
       </div>
     </div>
