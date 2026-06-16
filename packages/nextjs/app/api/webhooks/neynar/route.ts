@@ -37,23 +37,31 @@ export async function POST(request: Request) {
 
     const { address: recipientAddress, username } = userData;
 
-    if (await db.hasUserMinted(campaign.id, recipientAddress)) {
-      console.log(`Webhook: User ${username} (${recipientAddress}) has already minted in this campaign.`);
-      return NextResponse.json({ message: "User has already minted." }, { status: 200 });
-    }
-
     const mintCount = await db.getMintCount(campaign.id);
     if (mintCount >= campaign.max_mints) {
       console.log(`Webhook: Campaign "${campaign.name}" has reached its mint limit.`);
       return NextResponse.json({ message: "Campaign has ended." }, { status: 200 });
     }
 
+    // Reserve-before-mint to close the claim race. P2002 means a slot already exists (replay-safe no-op).
+    let reservation;
+    try {
+      reservation = await db.reserveMint(campaign.id, recipientAddress, userFid);
+    } catch (e: any) {
+      if (e?.code === "P2002") {
+        console.log(`Webhook: User ${username} (${recipientAddress}) has already minted in this campaign.`);
+        return NextResponse.json({ message: "User has already minted." }, { status: 200 });
+      }
+      throw e;
+    }
+
     const mintResult = await blockchain.mintNFT(recipientAddress as `0x${string}`);
     if (!mintResult.success) {
+      await db.failMint(reservation.id);
       throw new Error("Mint transaction failed.");
     }
 
-    await db.recordMint(campaign.id, mintResult.tokenId, recipientAddress, userFid);
+    await db.finalizeMint(reservation.id, mintResult.tokenId);
     console.log(
       `Success! NFT ${mintResult.tokenId} minted for ${username} (${recipientAddress}) in tx ${mintResult.hash}`,
     );

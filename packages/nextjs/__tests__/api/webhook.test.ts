@@ -10,7 +10,9 @@ vi.mock("@/services/database.service", () => ({
   findCampaignByCastHash: vi.fn(),
   hasUserMinted: vi.fn(),
   getMintCount: vi.fn(),
-  recordMint: vi.fn(),
+  reserveMint: vi.fn(),
+  finalizeMint: vi.fn(),
+  failMint: vi.fn(),
 }));
 
 vi.mock("@/services/blockchain.service", () => ({
@@ -101,7 +103,8 @@ describe("POST /api/webhooks/neynar", () => {
   it("returns 200 (ignored) when user already minted", async () => {
     mockDb.findCampaignByCastHash.mockResolvedValue(mockCampaign as any);
     mockNeynar.getUserDataFromFid.mockResolvedValue({ address: "0xuser", username: "testuser" });
-    mockDb.hasUserMinted.mockResolvedValue(true);
+    mockDb.getMintCount.mockResolvedValue(5);
+    mockDb.reserveMint.mockRejectedValue({ code: "P2002" });
 
     const res = await POST(makeRequest(validWebhookBody));
     expect(res.status).toBe(200);
@@ -112,7 +115,6 @@ describe("POST /api/webhooks/neynar", () => {
   it("returns 200 (ignored) when campaign is at mint limit", async () => {
     mockDb.findCampaignByCastHash.mockResolvedValue(mockCampaign as any);
     mockNeynar.getUserDataFromFid.mockResolvedValue({ address: "0xuser", username: "testuser" });
-    mockDb.hasUserMinted.mockResolvedValue(false);
     mockDb.getMintCount.mockResolvedValue(100); // equals max_mints
 
     const res = await POST(makeRequest(validWebhookBody));
@@ -124,10 +126,10 @@ describe("POST /api/webhooks/neynar", () => {
   it("mints NFT and records it on successful flow", async () => {
     mockDb.findCampaignByCastHash.mockResolvedValue(mockCampaign as any);
     mockNeynar.getUserDataFromFid.mockResolvedValue({ address: "0xuser", username: "testuser" });
-    mockDb.hasUserMinted.mockResolvedValue(false);
     mockDb.getMintCount.mockResolvedValue(5);
+    mockDb.reserveMint.mockResolvedValue({ id: 99 } as any);
     mockBlockchain.mintNFT.mockResolvedValue({ success: true, tokenId: 42, hash: "0xtxhash" as `0x${string}` });
-    mockDb.recordMint.mockResolvedValue(undefined);
+    mockDb.finalizeMint.mockResolvedValue(undefined as any);
     mockNeynar.publishCast.mockResolvedValue({ success: true, hash: "0xcast" });
 
     const res = await POST(makeRequest(validWebhookBody));
@@ -136,15 +138,17 @@ describe("POST /api/webhooks/neynar", () => {
     expect(json.message).toContain("testuser");
 
     expect(mockBlockchain.mintNFT).toHaveBeenCalledWith("0xuser");
-    expect(mockDb.recordMint).toHaveBeenCalledWith(1, 42, "0xuser", 12345);
+    expect(mockDb.reserveMint).toHaveBeenCalledWith(1, "0xuser", 12345);
+    expect(mockDb.finalizeMint).toHaveBeenCalledWith(99, 42);
     expect(mockNeynar.publishCast).toHaveBeenCalled();
   });
 
   it("returns 500 when mint fails", async () => {
     mockDb.findCampaignByCastHash.mockResolvedValue(mockCampaign as any);
     mockNeynar.getUserDataFromFid.mockResolvedValue({ address: "0xuser", username: "testuser" });
-    mockDb.hasUserMinted.mockResolvedValue(false);
     mockDb.getMintCount.mockResolvedValue(5);
+    mockDb.reserveMint.mockResolvedValue({ id: 99 } as any);
+    mockDb.failMint.mockResolvedValue(undefined as any);
     mockBlockchain.mintNFT.mockResolvedValue({ success: false, tokenId: -1, hash: "0x" as `0x${string}` });
 
     const res = await POST(makeRequest(validWebhookBody));

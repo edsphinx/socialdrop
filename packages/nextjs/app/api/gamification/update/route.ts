@@ -46,9 +46,10 @@ export async function POST(request: NextRequest) {
 
     // 5. Check evolution thresholds
     const userMint = await db.findUserMint(campaignId, userData.address);
-    if (!userMint) {
+    if (!userMint || userMint.token_id === null) {
       return NextResponse.json({ score, level: 1, evolved: false });
     }
+    const userMintTokenId = userMint.token_id;
 
     const currentLevel = userMint.level;
     const targetLevel = checkEvolution(currentLevel, score);
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
       let allSucceeded = true;
 
       for (let i = 0; i < levelsToAdvance; i++) {
-        const result = await blockchain.evolveNFT(userMint.token_id);
+        const result = await blockchain.evolveNFT(userMintTokenId);
         if (!result.success) {
           // Partial evolution: save whatever level we reached
           newLevel = currentLevel + i;

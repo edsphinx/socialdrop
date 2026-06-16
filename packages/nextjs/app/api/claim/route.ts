@@ -38,10 +38,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "Campaign has reached its mint limit." }, { status: 409 });
     }
 
-    if (await db.hasUserMinted(campaign.id, recipientAddress)) {
-      return NextResponse.json({ success: false, message: "You have already claimed this NFT." }, { status: 409 });
-    }
-
     const hasLiked = await social.didUserLikeCast(userFid, campaign.target_cast_hash);
     if (!hasLiked) {
       return NextResponse.json(
@@ -50,13 +46,21 @@ export async function POST(request: Request) {
       );
     }
 
-    // --- Minting ---
+    // --- Minting (reserve-before-mint to close the claim race) ---
+    let reservation;
+    try {
+      reservation = await db.reserveMint(campaign.id, recipientAddress, userFid);
+    } catch (e: any) {
+      if (e?.code === "P2002")
+        return NextResponse.json({ success: false, message: "You have already claimed this NFT." }, { status: 409 });
+      throw e;
+    }
     const mintResult = await blockchain.mintNFT(recipientAddress as `0x${string}`);
     if (!mintResult.success) {
+      await db.failMint(reservation.id);
       throw new Error("Mint transaction failed.");
     }
-
-    await db.recordMint(campaign.id, mintResult.tokenId, recipientAddress, userFid);
+    await db.finalizeMint(reservation.id, mintResult.tokenId);
 
     const castText = `🎉 @${username} just claimed NFT #${mintResult.tokenId} from the "${campaign.name}" drop!`;
     await social.publishCast(castText);

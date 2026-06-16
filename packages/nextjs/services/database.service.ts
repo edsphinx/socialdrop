@@ -24,15 +24,28 @@ export async function getMintCount(campaignId: number) {
   });
 }
 
-export async function recordMint(campaignId: number, tokenId: number, recipientAddress: string, userFid?: number) {
-  await prisma.nfts_minted.create({
+/** Reserve a claim slot. Throws Prisma P2002 (unique violation) if already reserved/claimed. */
+export async function reserveMint(campaignId: number, recipientAddress: string, userFid?: number) {
+  return await prisma.nfts_minted.create({
     data: {
       campaign_id: campaignId,
-      token_id: tokenId,
       recipient_address: recipientAddress,
       user_fid: userFid ?? null,
+      token_id: null,
+      status: "pending",
     },
   });
+}
+
+export async function finalizeMint(id: number, tokenId: number) {
+  return await prisma.nfts_minted.update({
+    where: { id },
+    data: { token_id: tokenId, status: "minted" },
+  });
+}
+
+export async function failMint(id: number) {
+  return await prisma.nfts_minted.delete({ where: { id } });
 }
 
 export async function findCampaignById(campaignId: number) {
@@ -78,7 +91,7 @@ export async function registerForGamification(
  */
 export async function findUserMint(campaignId: number, recipientAddress: string) {
   return await prisma.nfts_minted.findFirst({
-    where: { campaign_id: campaignId, recipient_address: recipientAddress },
+    where: { campaign_id: campaignId, recipient_address: recipientAddress, status: "minted" },
   });
 }
 

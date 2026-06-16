@@ -24,7 +24,9 @@ vi.mock("@/services/database.service", () => ({
   findCampaignById: vi.fn(),
   hasUserMinted: vi.fn(),
   getMintCount: vi.fn(),
-  recordMint: vi.fn(),
+  reserveMint: vi.fn(),
+  finalizeMint: vi.fn(),
+  failMint: vi.fn(),
 }));
 
 vi.mock("@/services/blockchain.service", () => ({
@@ -86,7 +88,8 @@ describe("POST /api/claim", () => {
     mockDb.findCampaignById.mockResolvedValue(mockCampaign as any);
     mockGetUserByFid.mockResolvedValue({ fid: 123, address: "0xuser", username: "testuser", pfpUrl: "" });
     mockDb.getMintCount.mockResolvedValue(5);
-    mockDb.hasUserMinted.mockResolvedValue(true);
+    mockDidUserLikeCast.mockResolvedValue(true);
+    mockDb.reserveMint.mockRejectedValue({ code: "P2002" });
 
     const res = await POST(makeRequest({ campaignId: 1 }));
     expect(res.status).toBe(409);
@@ -98,7 +101,6 @@ describe("POST /api/claim", () => {
     mockDb.findCampaignById.mockResolvedValue(mockCampaign as any);
     mockGetUserByFid.mockResolvedValue({ fid: 123, address: "0xuser", username: "testuser", pfpUrl: "" });
     mockDb.getMintCount.mockResolvedValue(5);
-    mockDb.hasUserMinted.mockResolvedValue(false);
     mockDidUserLikeCast.mockResolvedValue(false);
 
     const res = await POST(makeRequest({ campaignId: 1 }));
@@ -111,10 +113,10 @@ describe("POST /api/claim", () => {
     mockDb.findCampaignById.mockResolvedValue(mockCampaign as any);
     mockGetUserByFid.mockResolvedValue({ fid: 123, address: "0xuser", username: "testuser", pfpUrl: "" });
     mockDb.getMintCount.mockResolvedValue(5);
-    mockDb.hasUserMinted.mockResolvedValue(false);
     mockDidUserLikeCast.mockResolvedValue(true);
+    mockDb.reserveMint.mockResolvedValue({ id: 99 } as any);
     mockBlockchain.mintNFT.mockResolvedValue({ success: true, tokenId: 7, hash: "0xtxhash" as `0x${string}` });
-    mockDb.recordMint.mockResolvedValue(undefined);
+    mockDb.finalizeMint.mockResolvedValue(undefined as any);
     mockPublishCast.mockResolvedValue({ success: true, hash: "0xcast" });
 
     const res = await POST(makeRequest({ campaignId: 1 }));
@@ -125,7 +127,8 @@ describe("POST /api/claim", () => {
     expect(json.transactionHash).toBe("0xtxhash");
 
     expect(mockBlockchain.mintNFT).toHaveBeenCalledWith("0xuser");
-    expect(mockDb.recordMint).toHaveBeenCalledWith(1, 7, "0xuser", 123);
+    expect(mockDb.reserveMint).toHaveBeenCalledWith(1, "0xuser", 123);
+    expect(mockDb.finalizeMint).toHaveBeenCalledWith(99, 7);
     expect(mockPublishCast).toHaveBeenCalled();
   });
 
@@ -133,8 +136,9 @@ describe("POST /api/claim", () => {
     mockDb.findCampaignById.mockResolvedValue(mockCampaign as any);
     mockGetUserByFid.mockResolvedValue({ fid: 123, address: "0xuser", username: "testuser", pfpUrl: "" });
     mockDb.getMintCount.mockResolvedValue(5);
-    mockDb.hasUserMinted.mockResolvedValue(false);
     mockDidUserLikeCast.mockResolvedValue(true);
+    mockDb.reserveMint.mockResolvedValue({ id: 99 } as any);
+    mockDb.failMint.mockResolvedValue(undefined as any);
     mockBlockchain.mintNFT.mockResolvedValue({ success: false, tokenId: -1, hash: "0x" as `0x${string}` });
 
     const res = await POST(makeRequest({ campaignId: 1 }));
