@@ -38,7 +38,7 @@ export function BottomNav() {
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex flex-col items-center gap-1.5 py-1 text-[10px] font-medium tracking-wide transition-colors",
-                  active ? "text-foreground" : "text-muted-foreground",
+                  active ? "text-foreground" : "text-foreground/50",
                 )}
               >
                 {/* Square Base motif: active tab is filled Base Blue, inactive is a muted square */}

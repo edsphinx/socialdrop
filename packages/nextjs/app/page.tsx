@@ -5,7 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import Farcaster from "@farcaster/miniapp-sdk";
 import { motion } from "framer-motion";
+import { BoltIcon, MegaphoneIcon } from "@heroicons/react/24/outline";
 import { BottomNav } from "@/components/BottomNav";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -103,12 +105,13 @@ export default function HomePage() {
           className="mb-6 flex items-center justify-between"
         >
           <div>
-            <h1 className="text-[22px] font-bold leading-none tracking-tight">{greeting}</h1>
+            <h1 className="text-[22px] font-bold leading-none tracking-tight text-foreground">{greeting}</h1>
             <p className="mt-1.5 text-[11px] text-muted-foreground">
               {isLoading ? "Connecting to Farcaster…" : "Welcome to SocialDrop"}
             </p>
           </div>
-          <div className="size-10 flex-none overflow-hidden rounded-full border border-border bg-card">
+          {/* pfp ring: visible border using ring over the border utility */}
+          <div className="size-10 flex-none overflow-hidden rounded-full border-2 border-primary/40 bg-card ring-1 ring-white/10">
             {pfpUrl ? (
               <Image
                 src={pfpUrl}
@@ -119,7 +122,7 @@ export default function HomePage() {
                 unoptimized
               />
             ) : (
-              <div className="flex size-10 items-center justify-center text-sm font-bold text-muted-foreground">
+              <div className="flex size-10 items-center justify-center text-sm font-bold text-foreground/70">
                 {user?.username?.[0]?.toUpperCase() ?? "?"}
               </div>
             )}
@@ -128,8 +131,8 @@ export default function HomePage() {
 
         <motion.div variants={container} initial="hidden" animate="show">
           {/* Trending feed */}
-          <motion.div variants={item} className="mb-2.5 flex items-center justify-between">
-            <span className="font-doto text-[11px] text-foreground">Trending</span>
+          <motion.div variants={item} className="mb-3 flex items-center justify-between">
+            <span className="font-doto text-sm text-foreground/90">Trending</span>
             <Link href="/claims" className="text-[11px] text-muted-foreground transition-colors hover:text-foreground">
               See all
             </Link>
@@ -138,8 +141,8 @@ export default function HomePage() {
           {dataLoading ? (
             <TrendingSkeleton />
           ) : campaigns.length === 0 ? (
-            <motion.div variants={item}>
-              <EmptyState text="No campaigns yet" />
+            <motion.div variants={item} className="mb-6">
+              <CampaignsEmptyState />
             </motion.div>
           ) : (
             <div className="mb-6 space-y-3">
@@ -152,8 +155,8 @@ export default function HomePage() {
           )}
 
           {/* War of Influence preview */}
-          <motion.div variants={item} className="mb-2.5 mt-2 flex items-center justify-between">
-            <span className="font-doto text-[11px] text-muted-foreground">War of Influence</span>
+          <motion.div variants={item} className="mb-3 mt-2 flex items-center justify-between">
+            <span className="font-doto text-sm text-foreground/90">War of Influence</span>
             <Link href="/duel" className="text-[11px] text-muted-foreground transition-colors hover:text-foreground">
               See all
             </Link>
@@ -163,12 +166,12 @@ export default function HomePage() {
             <LeaderboardSkeleton />
           ) : duels.length === 0 ? (
             <motion.div variants={item}>
-              <EmptyState text="No duels yet" />
+              <DuelsEmptyState />
             </motion.div>
           ) : (
             <motion.div variants={item}>
               <Link href="/duel" className="block">
-                <Card className="gap-0 px-4 py-2">
+                <Card className="gap-0 border border-border/60 px-4 py-2 ring-1 ring-white/5">
                   {duels.slice(0, 4).map((d, i) => (
                     <LeaderboardRow
                       key={d.id ?? `${d.name}-${i}`}
@@ -196,7 +199,7 @@ function CampaignCard({ campaign }: { campaign: TrendingCampaign }) {
 
   return (
     <Link href={`/c/${campaign.id}`} className="block">
-      <Card className="gap-0 rounded-[14px] p-3.5 transition-colors hover:border-primary/60">
+      <Card className="gap-0 rounded-[14px] border border-border/60 p-4 ring-1 ring-white/5 transition-colors hover:border-primary/60">
         {/* Image — flat Base Blue block fallback when no image */}
         <div className="relative mb-3 h-[88px] overflow-hidden rounded-lg bg-primary">
           {campaign.image_url ? (
@@ -214,14 +217,14 @@ function CampaignCard({ campaign }: { campaign: TrendingCampaign }) {
           )}
         </div>
 
-        <div className="text-[14.5px] font-bold leading-tight tracking-tight">{campaign.name}</div>
+        <div className="text-[14.5px] font-bold leading-tight tracking-tight text-foreground">{campaign.name}</div>
         <div className="mb-2.5 mt-1.5 text-[11px] tabular-nums text-muted-foreground">
           {minted} / {max} claimed
         </div>
 
-        {/* Thin Base-Blue progress bar */}
-        <div className="h-1.5 w-full overflow-hidden bg-border">
-          <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
+        {/* Thin Base-Blue progress bar on a slightly lighter track */}
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+          <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
         </div>
       </Card>
     </Link>
@@ -231,7 +234,7 @@ function CampaignCard({ campaign }: { campaign: TrendingCampaign }) {
 function LeaderboardRow({ rank, duel, last }: { rank: number; duel: Duel; last: boolean }) {
   const isFirst = rank === 1;
   return (
-    <div className={cn("flex items-center gap-2.5 py-2.5", !last && "border-b border-border")}>
+    <div className={cn("flex items-center gap-2.5 py-2.5", !last && "border-b border-border/60")}>
       <span
         className={cn(
           "flex size-4 flex-none items-center justify-center rounded-[2px] text-[9px] font-bold",
@@ -240,7 +243,7 @@ function LeaderboardRow({ rank, duel, last }: { rank: number; duel: Duel; last: 
       >
         {rank}
       </span>
-      <span className="size-[22px] flex-none overflow-hidden rounded-full border border-border bg-card">
+      <span className="size-[22px] flex-none overflow-hidden rounded-full border border-border/60 bg-card ring-1 ring-white/5">
         {duel.pfpUrl ? (
           <Image
             src={duel.pfpUrl}
@@ -252,16 +255,39 @@ function LeaderboardRow({ rank, duel, last }: { rank: number; duel: Duel; last: 
           />
         ) : null}
       </span>
-      <span className="truncate text-[12.5px]">{duel.name}</span>
-      <b className="ml-auto flex-none text-[12.5px] tabular-nums">{duel.score} ♥</b>
+      <span className="truncate text-[12.5px] text-foreground/90">{duel.name}</span>
+      <b className="ml-auto flex-none text-[12.5px] tabular-nums text-foreground">{duel.score} ♥</b>
     </div>
   );
 }
 
-function EmptyState({ text }: { text: string }) {
+function CampaignsEmptyState() {
   return (
-    <Card className="items-center justify-center gap-0 rounded-[14px] py-8 text-center">
-      <p className="text-[12px] text-muted-foreground">{text}</p>
+    <Card className="gap-0 rounded-[14px] border border-border/60 px-6 py-10 ring-1 ring-white/5">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <MegaphoneIcon className="size-9 text-muted-foreground/60" />
+        <div>
+          <p className="text-sm font-semibold text-foreground">No campaigns yet</p>
+          <p className="mt-1 text-[12px] text-muted-foreground">Be the first to launch one</p>
+        </div>
+        <Button asChild size="sm" className="mt-1">
+          <Link href="/admin/create">Create a campaign</Link>
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
+function DuelsEmptyState() {
+  return (
+    <Card className="gap-0 rounded-[14px] border border-border/60 px-6 py-10 ring-1 ring-white/5">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <BoltIcon className="size-9 text-muted-foreground/60" />
+        <div>
+          <p className="text-sm font-semibold text-foreground">No duels yet</p>
+          <p className="mt-1 text-[12px] text-muted-foreground">Claim an NFT and compete</p>
+        </div>
+      </div>
     </Card>
   );
 }
@@ -270,11 +296,11 @@ function TrendingSkeleton() {
   return (
     <div className="mb-6 space-y-3">
       {[0, 1].map(i => (
-        <Card key={i} className="gap-0 rounded-[14px] p-3.5">
-          <div className="mb-3 h-[88px] animate-pulse rounded-lg bg-card" />
-          <div className="mb-2 h-3.5 w-1/2 animate-pulse rounded bg-card" />
-          <div className="mb-2.5 h-2.5 w-1/3 animate-pulse rounded bg-card" />
-          <div className="h-1.5 w-full bg-border" />
+        <Card key={i} className="gap-0 rounded-[14px] border border-border/60 p-4 ring-1 ring-white/5">
+          <div className="mb-3 h-[88px] animate-pulse rounded-lg bg-muted" />
+          <div className="mb-2 h-3.5 w-1/2 animate-pulse rounded bg-muted" />
+          <div className="mb-2.5 h-2.5 w-1/3 animate-pulse rounded bg-muted" />
+          <div className="h-1.5 w-full rounded-full bg-muted" />
         </Card>
       ))}
     </div>
@@ -283,13 +309,13 @@ function TrendingSkeleton() {
 
 function LeaderboardSkeleton() {
   return (
-    <Card className="gap-0 px-4 py-2">
+    <Card className="gap-0 border border-border/60 px-4 py-2 ring-1 ring-white/5">
       {[0, 1, 2].map(i => (
-        <div key={i} className={cn("flex items-center gap-2.5 py-2.5", i < 2 && "border-b border-border")}>
-          <span className="size-4 flex-none animate-pulse rounded-[2px] bg-card" />
-          <span className="size-[22px] flex-none animate-pulse rounded-full bg-card" />
-          <span className="h-3 w-24 animate-pulse rounded bg-card" />
-          <span className="ml-auto h-3 w-8 animate-pulse rounded bg-card" />
+        <div key={i} className={cn("flex items-center gap-2.5 py-2.5", i < 2 && "border-b border-border/60")}>
+          <span className="size-4 flex-none animate-pulse rounded-[2px] bg-muted" />
+          <span className="size-[22px] flex-none animate-pulse rounded-full bg-muted" />
+          <span className="h-3 w-24 animate-pulse rounded bg-muted" />
+          <span className="ml-auto h-3 w-8 animate-pulse rounded bg-muted" />
         </div>
       ))}
     </Card>
