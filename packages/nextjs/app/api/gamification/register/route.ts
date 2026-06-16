@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UnauthorizedError, getVerifiedFid } from "@/lib/auth/getVerifiedFid";
 import { getSocialDataProvider } from "@/lib/social";
+import { gamificationRegisterSchema } from "@/lib/validation/schemas";
 import * as db from "@/services/database.service";
 
 export async function POST(request: NextRequest) {
@@ -15,12 +16,9 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = await request.json();
-    const { campaignId, castHash } = body;
-
-    if (!campaignId || !castHash) {
-      return NextResponse.json({ error: "userFid, campaignId, and castHash are required." }, { status: 400 });
-    }
+    const parsed = gamificationRegisterSchema.safeParse(await request.json());
+    if (!parsed.success) return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    const { campaignId, castHash } = parsed.data;
 
     const social = getSocialDataProvider();
 

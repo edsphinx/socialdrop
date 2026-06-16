@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { UnauthorizedError, getVerifiedFid } from "@/lib/auth/getVerifiedFid";
+import { checkRateLimit } from "@/lib/ratelimit";
 import { getSocialDataProvider } from "@/lib/social";
+import { claimSchema } from "@/lib/validation/schemas";
 import * as blockchain from "@/services/blockchain.service";
 import * as db from "@/services/database.service";
 
@@ -15,13 +17,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, message: "Internal server error." }, { status: 500 });
   }
 
-  try {
-    const body = await request.json();
-    if (!body) {
-      return new NextResponse("Invalid request body.", { status: 400 });
-    }
+  if (!(await checkRateLimit(`fid:${userFid}`)))
+    return NextResponse.json({ success: false, message: "Too many requests." }, { status: 429 });
 
-    const { campaignId } = body;
+  try {
+    const parsed = claimSchema.safeParse(await request.json());
+    if (!parsed.success)
+      return NextResponse.json({ success: false, message: "Invalid request body." }, { status: 400 });
+    const { campaignId } = parsed.data;
 
     const social = getSocialDataProvider();
 

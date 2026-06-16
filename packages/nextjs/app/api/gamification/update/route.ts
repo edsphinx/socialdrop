@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UnauthorizedError, getVerifiedFid } from "@/lib/auth/getVerifiedFid";
 import { checkEvolution } from "@/lib/evolution";
+import { checkRateLimit } from "@/lib/ratelimit";
 import { getSocialDataProvider } from "@/lib/social";
+import { gamificationUpdateSchema } from "@/lib/validation/schemas";
 import * as blockchain from "@/services/blockchain.service";
 import * as db from "@/services/database.service";
 
@@ -16,13 +18,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  try {
-    const body = await request.json();
-    const { campaignId } = body;
+  if (!(await checkRateLimit(`fid:${userFid}`)))
+    return NextResponse.json({ error: "Too many requests." }, { status: 429 });
 
-    if (!campaignId) {
-      return NextResponse.json({ error: "userFid and campaignId are required." }, { status: 400 });
-    }
+  try {
+    const parsed = gamificationUpdateSchema.safeParse(await request.json());
+    if (!parsed.success) return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    const { campaignId } = parsed.data;
 
     const social = getSocialDataProvider();
 
