@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getDemoCampaignStatus, isDemoMode } from "@/lib/demo";
 import * as db from "@/services/database.service";
 
 export async function GET(request: NextRequest) {
@@ -8,6 +9,8 @@ export async function GET(request: NextRequest) {
   if (!campaignId) {
     return NextResponse.json({ error: "Campaign ID is required" }, { status: 400 });
   }
+
+  if (isDemoMode()) return NextResponse.json(getDemoCampaignStatus(campaignId));
 
   try {
     const campaign = await db.findCampaignById(campaignId);

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UnauthorizedError, getVerifiedFid } from "@/lib/auth/getVerifiedFid";
+import { isDemoMode } from "@/lib/demo";
 import { checkEvolution } from "@/lib/evolution";
 import { checkRateLimit } from "@/lib/ratelimit";
 import { getSocialDataProvider } from "@/lib/social";
@@ -8,6 +9,8 @@ import * as blockchain from "@/services/blockchain.service";
 import * as db from "@/services/database.service";
 
 export async function POST(request: NextRequest) {
+  if (isDemoMode()) return NextResponse.json({ score: 31, level: 3, evolved: false });
+
   let userFid: number;
   try {
     userFid = await getVerifiedFid(request);

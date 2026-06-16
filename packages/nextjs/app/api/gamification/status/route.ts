@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/clients/prisma";
+import { getDemoGamificationStatus, isDemoMode } from "@/lib/demo";
 import { getLevelOf } from "@/services/blockchain.service";
 import { getCastLikesCount, getUserDataFromFid } from "@/services/neynar.service";
 
@@ -18,6 +19,8 @@ export async function GET(request: NextRequest) {
   if (!fid || !campaignId) {
     return NextResponse.json({ error: "FID and campaignId are required" }, { status: 400 });
   }
+
+  if (isDemoMode()) return NextResponse.json(getDemoGamificationStatus());
 
   try {
     const userData = await getUserDataFromFid(fid);

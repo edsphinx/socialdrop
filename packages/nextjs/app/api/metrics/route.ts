@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/clients/prisma";
+import { getDemoMetrics, isDemoMode } from "@/lib/demo";
 
 export async function GET() {
+  if (isDemoMode()) return NextResponse.json(getDemoMetrics());
+
   try {
     const [totalCampaigns, activeCampaigns, totalMints, uniqueParticipants, registeredCompetitors] = await Promise.all([
       prisma.campaigns.count(),

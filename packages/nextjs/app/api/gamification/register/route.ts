@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UnauthorizedError, getVerifiedFid } from "@/lib/auth/getVerifiedFid";
+import { isDemoMode } from "@/lib/demo";
 import { getSocialDataProvider } from "@/lib/social";
 import { gamificationRegisterSchema } from "@/lib/validation/schemas";
 import * as db from "@/services/database.service";
 
 export async function POST(request: NextRequest) {
+  if (isDemoMode())
+    return NextResponse.json({
+      success: true,
+      message: "Registered for War of Influence!",
+      score: 12,
+    });
+
   let userFid: number;
   try {
     userFid = await getVerifiedFid(request);

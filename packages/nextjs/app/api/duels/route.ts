@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/clients/prisma";
+import { getDemoDuels, isDemoMode } from "@/lib/demo";
 import { getSocialDataProvider } from "@/lib/social";
 
 interface Duel {
@@ -12,6 +13,8 @@ interface Duel {
 }
 
 export async function GET() {
+  if (isDemoMode()) return NextResponse.json(getDemoDuels());
+
   try {
     // Get the top 10 scores as "active duels"
     const topScores = await prisma.gamification_scores.findMany({
