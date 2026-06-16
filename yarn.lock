@@ -1727,6 +1727,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@farcaster/quick-auth@npm:^0.0.8":
+  version: 0.0.8
+  resolution: "@farcaster/quick-auth@npm:0.0.8"
+  dependencies:
+    jose: ^5.8.0
+    zod: ^3.25.1
+  peerDependencies:
+    typescript: 5.8.3
+  checksum: 466ca777cbe2de83fc470650ff7455f863a0f848d80767ba25f0fbf01c1f7fffcc1a253b2afc65ba1966682c2dcd1f9d5962f5a17370cd16b7c3b8dd420e3d95
+  languageName: node
+  linkType: hard
+
 "@fastify/busboy@npm:^2.0.0":
   version: 2.1.1
   resolution: "@fastify/busboy@npm:2.1.1"
@@ -4614,6 +4626,7 @@ __metadata:
   resolution: "@socialdrop/nextjs@workspace:packages/nextjs"
   dependencies:
     "@farcaster/miniapp-sdk": ^0.1.10
+    "@farcaster/quick-auth": ^0.0.8
     "@heroicons/react": ~2.1.5
     "@prisma/client": latest
     "@rainbow-me/rainbowkit": 2.2.8
@@ -13258,7 +13271,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jose@npm:^5.2.3":
+"jose@npm:^5.2.3, jose@npm:^5.8.0":
   version: 5.10.0
   resolution: "jose@npm:5.10.0"
   checksum: e80965ef3ab47baafac3517f53fa9c74b948b57690de524f51320c314cd545ef51ec7b18761605d58fb5965b7c5e12b2bb6ddae87a6ccf55e3f4ad077347d8d7
