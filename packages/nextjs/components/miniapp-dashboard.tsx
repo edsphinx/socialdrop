@@ -2,9 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import Farcaster, { sdk } from "@farcaster/miniapp-sdk";
+import { motion } from "framer-motion";
 import toast from "react-hot-toast";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type FarcasterUser = Awaited<typeof Farcaster.context>["user"];
 
@@ -86,60 +90,199 @@ export default function MiniAppDashboard() {
     }
   };
 
-  if (isLoading) return <div className="flex items-center justify-center min-h-screen text-white">Loading...</div>;
-  if (!campaignData) return <div className="p-4 text-center text-white">Campaign not found.</div>;
+  const progress = Number(campaignData?.progress ?? 0);
+  const total = Number(campaignData?.total ?? 0);
+  const pct = total > 0 ? Math.min(100, Math.round((progress / total) * 100)) : 0;
 
   return (
-    <div className="flex flex-col justify-between min-h-screen p-6 text-white text-center">
-      <div className="flex-grow flex flex-col items-center justify-center">
-        <h1 className="text-4xl font-bold">{campaignData?.name}</h1>
-        <p className="mt-2 text-gray-400">
-          {campaignData?.progress} / {campaignData?.total} claimed
-        </p>
-        <progress
-          className="progress progress-primary w-full mt-4"
-          value={campaignData?.progress}
-          max={campaignData?.total}
-        ></progress>
+    <div className="flex min-h-screen flex-col bg-background px-5 pb-8 pt-4 text-foreground">
+      {/* Back affordance */}
+      <div className="flex items-center gap-2 py-2">
+        <Link
+          href="/"
+          aria-label="Go back"
+          className="flex size-9 items-center justify-center rounded-md text-2xl leading-none text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          ‹
+        </Link>
+        <span className="text-sm font-semibold text-foreground/90">Claim</span>
       </div>
 
-      <div className="flex-shrink-0">
-        {mintedNFT ? (
-          <div className="flex flex-col items-center">
-            <h2 className="font-bold mb-4">Congratulations! Here&apos;s your NFT:</h2>
-            <Image
-              src={mintedNFT.image}
-              alt={mintedNFT.name}
-              width={192}
-              height={192}
-              className="w-48 h-48 rounded-lg border-2 border-primary"
-              unoptimized
-            />
-            <p className="mt-2 font-bold">{mintedNFT.name}</p>
-            <a
-              href={`https://sepolia.basescan.org/tx/${mintedNFT.transactionHash}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-secondary btn-outline w-full mt-4"
-            >
-              View on Basescan
-            </a>
-            <div className="mt-4 p-3 bg-base-200 rounded-lg">
-              <p className="text-sm opacity-70">
-                Your NFT is at Level 1. Post a cast promoting this campaign and register it to start competing!
-              </p>
-              <a href={`/duel/${campaignId}`} className="btn btn-accent btn-sm mt-2">
-                Enter War of Influence
-              </a>
-            </div>
+      {isLoading ? (
+        <ClaimSkeleton />
+      ) : !campaignData ? (
+        <NotFound />
+      ) : mintedNFT ? (
+        <Reveal campaignId={campaignId} nft={mintedNFT} />
+      ) : (
+        <PreClaim
+          name={campaignData?.name}
+          progress={progress}
+          total={total}
+          pct={pct}
+          username={user?.username}
+          disabled={isClaiming || !user}
+          isClaiming={isClaiming}
+          onClaim={handleClaim}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ---------- Pre-claim state ---------- */
+
+function PreClaim({
+  name,
+  progress,
+  total,
+  pct,
+  username,
+  disabled,
+  isClaiming,
+  onClaim,
+}: {
+  name?: string;
+  progress: number;
+  total: number;
+  pct: number;
+  username?: string;
+  disabled: boolean;
+  isClaiming: boolean;
+  onClaim: () => void;
+}) {
+  return (
+    <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col justify-center">
+        <span className="font-doto text-xs text-accent">Airdrop</span>
+        <h1 className="mt-2 text-3xl font-bold leading-tight tracking-tight text-foreground">{name}</h1>
+
+        <div className="mt-8">
+          <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
+            <span className="font-doto">Claimed</span>
+            <span className="tabular-nums">
+              {progress} / {total}
+            </span>
           </div>
-        ) : (
-          <button className="btn btn-primary btn-lg w-full" onClick={handleClaim} disabled={isClaiming || !user}>
-            {isClaiming ? "Claiming..." : "Claim my NFT"}
-          </button>
-        )}
-        {user && <p className="mt-4 text-xs text-gray-500">Connected as: @{user.username}</p>}
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+          </div>
+        </div>
       </div>
+
+      <div className="flex-shrink-0 space-y-3">
+        <Button
+          size="lg"
+          className="h-12 w-full text-base font-bold"
+          onClick={onClaim}
+          disabled={disabled}
+          aria-busy={isClaiming}
+        >
+          {isClaiming ? "Claiming…" : "Claim my NFT"}
+        </Button>
+        {username && (
+          <p className="text-center text-xs text-muted-foreground">
+            Connected as <span className="text-foreground/80">@{username}</span>
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Post-claim reveal ---------- */
+
+function Reveal({ campaignId, nft }: { campaignId: number; nft: NftData }) {
+  return (
+    <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col items-center justify-center">
+        {/* Gold square-medal */}
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: [0.9, 1.04, 1], opacity: 1 }}
+          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+          className="relative flex size-44 items-center justify-center rounded-xl border-2 border-accent bg-card shadow-[0_0_30px_rgba(255,209,47,0.35)]"
+        >
+          <Image
+            src={nft.image}
+            alt={nft.name}
+            width={176}
+            height={176}
+            className="size-full rounded-[10px] object-cover"
+            unoptimized
+          />
+          {/* Level-1 gold badge */}
+          <span className="absolute -right-3 -top-3 flex size-9 items-center justify-center rounded-md bg-accent text-base font-black text-accent-foreground">
+            1
+          </span>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, delay: 0.18, ease: [0.4, 0, 0.2, 1] }}
+          className="mt-6 text-center"
+        >
+          <span className="font-doto text-xs text-accent">Claimed</span>
+          <h2 className="mt-1 text-2xl font-bold tracking-tight text-foreground">{nft.name}</h2>
+        </motion.div>
+      </div>
+
+      <div className="flex-shrink-0 space-y-3">
+        <Button asChild variant="outline" size="lg" className="h-11 w-full">
+          <a href={`https://sepolia.basescan.org/tx/${nft.transactionHash}`} target="_blank" rel="noopener noreferrer">
+            View on Basescan
+          </a>
+        </Button>
+
+        <Button
+          asChild
+          size="lg"
+          className="h-12 w-full bg-accent text-base font-bold text-accent-foreground hover:bg-accent/90"
+        >
+          <Link href={`/duel/${campaignId}`}>Enter War of Influence</Link>
+        </Button>
+
+        <div className="rounded-xl border border-border bg-muted p-4">
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Your NFT is at <span className="font-semibold text-accent">Level 1</span>. Post a cast promoting this
+            campaign and register it to start competing!
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Loading + empty states ---------- */
+
+function ClaimSkeleton() {
+  return (
+    <div className="flex flex-1 flex-col" aria-busy="true" aria-label="Loading campaign">
+      <div className="flex flex-1 flex-col justify-center">
+        <div className="h-3 w-16 animate-pulse rounded bg-muted" />
+        <div className="mt-3 h-9 w-3/4 animate-pulse rounded bg-muted" />
+        <div className="mt-8 space-y-2">
+          <div className="h-3 w-24 animate-pulse rounded bg-muted" />
+          <div className="h-1.5 w-full animate-pulse rounded-full bg-muted" />
+        </div>
+      </div>
+      <div className="h-12 w-full animate-pulse rounded-md bg-muted" />
+    </div>
+  );
+}
+
+function NotFound() {
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center text-center">
+      <div className={cn("flex size-16 items-center justify-center rounded-xl border border-border bg-muted")}>
+        <span className="text-3xl text-muted-foreground">?</span>
+      </div>
+      <h1 className="mt-4 text-xl font-bold text-foreground">Campaign not found</h1>
+      <p className="mt-1 text-sm text-muted-foreground">This drop doesn&apos;t exist or has ended.</p>
+      <Button asChild variant="outline" className="mt-6">
+        <Link href="/">Back home</Link>
+      </Button>
     </div>
   );
 }
