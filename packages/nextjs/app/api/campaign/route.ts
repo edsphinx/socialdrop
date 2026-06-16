@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/clients/prisma";
+import { isDemoMode } from "@/lib/demo";
 import { publishCast } from "@/services/neynar.service";
 
 export async function POST(request: NextRequest) {
+  if (isDemoMode()) return NextResponse.json({ success: true, message: "Campaign created!", campaignId: 999 });
+
   try {
     const body = await request.json();
     const { name, castContent, nftCount, creatorFid, nftImageUrl } = body;

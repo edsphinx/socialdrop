@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/clients/prisma";
+import { demoFallbackAllowed, getDemoDuels, isDemoMode } from "@/lib/demo";
 import { getSocialDataProvider } from "@/lib/social";
 
 interface Duel {
@@ -12,6 +13,8 @@ interface Duel {
 }
 
 export async function GET() {
+  if (isDemoMode()) return NextResponse.json(getDemoDuels());
+
   try {
     // Get the top 10 scores as "active duels"
     const topScores = await prisma.gamification_scores.findMany({
@@ -51,6 +54,7 @@ export async function GET() {
     return NextResponse.json({ duels });
   } catch (error) {
     console.error("Error fetching duels list:", error);
+    if (demoFallbackAllowed()) return NextResponse.json(getDemoDuels());
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

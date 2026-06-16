@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/clients/prisma";
+import { demoFallbackAllowed, getDemoGamificationStatus, isDemoMode } from "@/lib/demo";
 import { getLevelOf } from "@/services/blockchain.service";
 import { getCastLikesCount, getUserDataFromFid } from "@/services/neynar.service";
 
@@ -18,6 +19,8 @@ export async function GET(request: NextRequest) {
   if (!fid || !campaignId) {
     return NextResponse.json({ error: "FID and campaignId are required" }, { status: 400 });
   }
+
+  if (isDemoMode()) return NextResponse.json(getDemoGamificationStatus());
 
   try {
     const userData = await getUserDataFromFid(fid);
@@ -58,6 +61,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error in /api/gamification/status:", error);
+    if (demoFallbackAllowed()) return NextResponse.json(getDemoGamificationStatus());
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

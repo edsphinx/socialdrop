@@ -1,6 +1,20 @@
+import { Doto, Inter_Tight } from "next/font/google";
 import type { Metadata } from "next";
 import { AppProviders } from "@/components/AppProviders";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import "@/styles/globals.css";
+
+const interTight = Inter_Tight({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter-tight",
+});
+
+const doto = Doto({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-doto",
+});
 
 export const metadata: Metadata = {
   title: "SocialDrop",
@@ -26,7 +40,7 @@ const miniAppConfig = {
 
 const SocialDropApp = ({ children }: { children: React.ReactNode }) => {
   return (
-    <html suppressHydrationWarning>
+    <html suppressHydrationWarning className={`${interTight.variable} ${doto.variable}`}>
       <head>
         <meta property="fc:miniapp" content={JSON.stringify(miniAppConfig)} />
         <meta property="fc:frame" content="vNext" />
@@ -34,8 +48,10 @@ const SocialDropApp = ({ children }: { children: React.ReactNode }) => {
         <meta property="fc:frame:post_url" content="https://socialdrop.live/api/frame" />
         <meta property="fc:frame:button:1" content="Launch SocialDrop" />
       </head>
-      <body>
-        <AppProviders>{children}</AppProviders>
+      <body className={interTight.className}>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} forcedTheme="dark">
+          <AppProviders>{children}</AppProviders>
+        </ThemeProvider>
       </body>
     </html>
   );

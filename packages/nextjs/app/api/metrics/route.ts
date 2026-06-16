@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/clients/prisma";
+import { demoFallbackAllowed, getDemoMetrics, isDemoMode } from "@/lib/demo";
 
 export async function GET() {
+  if (isDemoMode()) return NextResponse.json(getDemoMetrics());
+
   try {
     const [totalCampaigns, activeCampaigns, totalMints, uniqueParticipants, registeredCompetitors] = await Promise.all([
       prisma.campaigns.count(),
@@ -20,6 +23,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Error fetching metrics:", error);
+    if (demoFallbackAllowed()) return NextResponse.json(getDemoMetrics());
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

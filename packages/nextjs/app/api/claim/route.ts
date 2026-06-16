@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { UnauthorizedError, getVerifiedFid } from "@/lib/auth/getVerifiedFid";
+import { isDemoMode } from "@/lib/demo";
 import { checkRateLimit } from "@/lib/ratelimit";
 import { getSocialDataProvider } from "@/lib/social";
 import { claimSchema } from "@/lib/validation/schemas";
@@ -7,6 +8,14 @@ import * as blockchain from "@/services/blockchain.service";
 import * as db from "@/services/database.service";
 
 export async function POST(request: Request) {
+  if (isDemoMode())
+    return NextResponse.json({
+      success: true,
+      message: "NFT claimed successfully!",
+      tokenId: 1,
+      transactionHash: "0xdemo",
+    });
+
   let userFid: number;
   try {
     userFid = await getVerifiedFid(request);

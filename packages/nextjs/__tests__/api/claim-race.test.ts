@@ -55,6 +55,8 @@ function makeRequest(body: object): Request {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.stubEnv("DEMO_MODE", "false");
+  vi.stubEnv("DATABASE_URL", "test://demo-off");
 });
 
 describe("POST /api/claim — concurrent claim race", () => {
