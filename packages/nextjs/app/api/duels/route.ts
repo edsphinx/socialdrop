@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { personalNeynarClient } from "@/lib/clients/neynar";
 import prisma from "@/lib/clients/prisma";
+import { getSocialDataProvider } from "@/lib/social";
 
 interface Duel {
   id: number;
@@ -31,15 +31,16 @@ export async function GET() {
 
     let duels: Duel[] = [];
     if (duelistFids.length > 0) {
-      const usersResponse = await personalNeynarClient.fetchBulkUsers({ fids: duelistFids });
-      const usersMap = new Map(usersResponse.users.map(user => [user.fid, user]));
+      const social = getSocialDataProvider();
+      const users = await social.getBulkUsers(duelistFids);
+      const usersMap = new Map(users.map(u => [u.fid, u]));
 
       duels = topScores.map((score: (typeof topScores)[number]) => {
         const user = usersMap.get(score.nft_holder_fid!);
         return {
           id: score.id,
           name: user ? `@${user.username}` : `Influencer FID #${score.nft_holder_fid}`,
-          pfpUrl: user?.pfp_url || "/default-avatar.svg",
+          pfpUrl: user?.pfpUrl || "/default-avatar.svg",
           score: score.score,
           campaignId: score.campaign.id,
           campaignName: score.campaign.name,
