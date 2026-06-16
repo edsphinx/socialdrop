@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/clients/prisma";
-import { getDemoMyClaims, isDemoMode } from "@/lib/demo";
+import { demoFallbackAllowed, getDemoMyClaims, isDemoMode } from "@/lib/demo";
 import { hasUserMinted } from "@/services/database.service";
 import { didUserLikeCast, getUserDataFromFid } from "@/services/neynar.service";
 
@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ eligibleCampaigns });
   } catch (error) {
     console.error("Error fetching user claims:", error);
+    if (demoFallbackAllowed()) return NextResponse.json(getDemoMyClaims());
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

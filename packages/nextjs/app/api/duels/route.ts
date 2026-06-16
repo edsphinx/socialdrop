@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/clients/prisma";
-import { getDemoDuels, isDemoMode } from "@/lib/demo";
+import { demoFallbackAllowed, getDemoDuels, isDemoMode } from "@/lib/demo";
 import { getSocialDataProvider } from "@/lib/social";
 
 interface Duel {
@@ -54,6 +54,7 @@ export async function GET() {
     return NextResponse.json({ duels });
   } catch (error) {
     console.error("Error fetching duels list:", error);
+    if (demoFallbackAllowed()) return NextResponse.json(getDemoDuels());
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

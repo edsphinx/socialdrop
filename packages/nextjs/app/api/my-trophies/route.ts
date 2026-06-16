@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDemoProfile, isDemoMode } from "@/lib/demo";
+import { demoFallbackAllowed, getDemoProfile, isDemoMode } from "@/lib/demo";
 
 /**
  * `GET /api/my-trophies?fid=<fid>`
@@ -13,9 +13,12 @@ export async function GET(req: NextRequest) {
 
   // TODO: real DB-backed implementation. Read the user's minted NFTs for this
   // fid, aggregate likes/best level, and shape them as trophies. Until then we
-  // return an empty profile so the screen renders its empty state cleanly.
+  // fall back to demo data when allowed, or return an empty profile so the
+  // screen renders its empty state cleanly.
   const fid = req.nextUrl.searchParams.get("fid");
   void fid;
+
+  if (demoFallbackAllowed()) return NextResponse.json(getDemoProfile());
 
   return NextResponse.json({
     stats: { trophies: 0, totalLikes: 0, bestLevel: 0 },

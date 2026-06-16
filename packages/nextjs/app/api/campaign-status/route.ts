@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDemoCampaignStatus, isDemoMode } from "@/lib/demo";
+import { demoFallbackAllowed, getDemoCampaignStatus, isDemoMode } from "@/lib/demo";
 import * as db from "@/services/database.service";
 
 export async function GET(request: NextRequest) {
@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(responseData);
   } catch (error) {
     console.error("Error fetching campaign status:", error);
+    if (demoFallbackAllowed()) return NextResponse.json(getDemoCampaignStatus(campaignId));
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/clients/prisma";
-import { getDemoDashboard, isDemoMode } from "@/lib/demo";
+import { demoFallbackAllowed, getDemoDashboard, isDemoMode } from "@/lib/demo";
 
 export async function GET() {
   if (isDemoMode()) return NextResponse.json(getDemoDashboard());
@@ -39,6 +39,7 @@ export async function GET() {
     return NextResponse.json({ trendingCampaigns, featuredDuels });
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
+    if (demoFallbackAllowed()) return NextResponse.json(getDemoDashboard());
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

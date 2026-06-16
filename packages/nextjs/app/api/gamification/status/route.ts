@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/clients/prisma";
-import { getDemoGamificationStatus, isDemoMode } from "@/lib/demo";
+import { demoFallbackAllowed, getDemoGamificationStatus, isDemoMode } from "@/lib/demo";
 import { getLevelOf } from "@/services/blockchain.service";
 import { getCastLikesCount, getUserDataFromFid } from "@/services/neynar.service";
 
@@ -61,6 +61,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error in /api/gamification/status:", error);
+    if (demoFallbackAllowed()) return NextResponse.json(getDemoGamificationStatus());
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

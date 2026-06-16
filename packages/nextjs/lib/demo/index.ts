@@ -15,6 +15,11 @@ export function isDemoMode(): boolean {
   return process.env.DEMO_MODE === "true" || !process.env.DATABASE_URL;
 }
 
+/** Demo fallback is allowed unless explicitly disabled. Use in route catch blocks. */
+export function demoFallbackAllowed(): boolean {
+  return process.env.DEMO_MODE !== "false";
+}
+
 // Avatars/images render through next/image with `unoptimized`, so no
 // remote-pattern config is needed for these SVG URLs.
 const avatar = (seed: string) => `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${encodeURIComponent(seed)}`;
