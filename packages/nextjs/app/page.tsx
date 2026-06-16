@@ -72,10 +72,16 @@ export default function HomePage() {
     let cancelled = false;
     Promise.all([
       fetch("/api/dashboard/main")
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+          return res.json();
+        })
         .catch(() => ({ trendingCampaigns: [] })),
       fetch("/api/duels")
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+          return res.json();
+        })
         .catch(() => ({ duels: [] })),
     ])
       .then(([dashboard, duelsRes]) => {
