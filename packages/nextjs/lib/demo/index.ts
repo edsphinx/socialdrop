@@ -269,6 +269,55 @@ export function getDemoMyClaims() {
   return { eligibleCampaigns };
 }
 
+/** Level number → human-readable level name. */
+const LEVEL_NAMES: Record<number, string> = {
+  1: "Participant",
+  2: "Influencer",
+  3: "Champion",
+  4: "Legend",
+};
+
+/** Public helper so the UI can map a level number to its name consistently. */
+export function levelName(level: number): string {
+  return LEVEL_NAMES[level] ?? "Participant";
+}
+
+/** `/api/my-trophies?fid=` — the user's profile: aggregate stats + earned trophies. */
+export function getDemoProfile() {
+  const trophies = [
+    {
+      id: 1,
+      campaignName: "Base Builders Drop",
+      level: 3,
+      levelName: levelName(3),
+      imageUrl: campaignImage("Base Builders Drop"),
+    },
+    {
+      id: 2,
+      campaignName: "Onchain Summer",
+      level: 2,
+      levelName: levelName(2),
+      imageUrl: campaignImage("Onchain Summer"),
+    },
+    {
+      id: 3,
+      campaignName: "Farcaster OG Drop",
+      level: 1,
+      levelName: levelName(1),
+      imageUrl: campaignImage("Farcaster OG Drop"),
+    },
+  ];
+
+  return {
+    stats: {
+      trophies: trophies.length,
+      totalLikes: 112,
+      bestLevel: Math.max(...trophies.map(t => t.level)),
+    },
+    trophies,
+  };
+}
+
 /** `/api/gamification/status` — a plausible holder status payload. */
 export function getDemoGamificationStatus() {
   const me = COMPETITORS[0];
