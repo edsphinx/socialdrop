@@ -2,7 +2,23 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "@/app/api/gamification/update/route";
 import * as blockchain from "@/services/blockchain.service";
 import * as db from "@/services/database.service";
-import { getCastLikesCount, getUserDataFromFid, publishCast } from "@/services/neynar.service";
+
+vi.mock("@/lib/auth/getVerifiedFid", () => ({
+  getVerifiedFid: vi.fn().mockResolvedValue(123),
+  UnauthorizedError: class UnauthorizedError extends Error {},
+}));
+
+const mockGetUserByFid = vi.fn();
+const mockGetLikes = vi.fn();
+const mockPublishCast = vi.fn();
+
+vi.mock("@/lib/social", () => ({
+  getSocialDataProvider: () => ({
+    getUserByFid: mockGetUserByFid,
+    getCastLikesCount: mockGetLikes,
+    publishCast: mockPublishCast,
+  }),
+}));
 
 vi.mock("@/services/database.service", () => ({
   findGamificationEntry: vi.fn(),
@@ -16,22 +32,13 @@ vi.mock("@/services/blockchain.service", () => ({
   evolveNFT: vi.fn(),
 }));
 
-vi.mock("@/services/neynar.service", () => ({
-  getUserDataFromFid: vi.fn(),
-  getCastLikesCount: vi.fn(),
-  publishCast: vi.fn(),
-}));
-
 const mockDb = vi.mocked(db);
 const mockBlockchain = vi.mocked(blockchain);
-const mockGetUserData = vi.mocked(getUserDataFromFid);
-const mockGetLikes = vi.mocked(getCastLikesCount);
-const mockPublishCast = vi.mocked(publishCast);
 
 function makeRequest(body: object): Request {
   return new Request("http://localhost/api/gamification/update", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", authorization: "Bearer test" },
     body: JSON.stringify(body),
   });
 }
@@ -59,43 +66,38 @@ beforeEach(() => {
 });
 
 describe("POST /api/gamification/update", () => {
-  it("returns 400 when userFid is missing", async () => {
-    const res = await POST(makeRequest({ campaignId: 1 }) as any);
-    expect(res.status).toBe(400);
-  });
-
   it("returns 400 when campaignId is missing", async () => {
-    const res = await POST(makeRequest({ userFid: 123 }) as any);
+    const res = await POST(makeRequest({}) as any);
     expect(res.status).toBe(400);
   });
 
   it("returns 404 when user wallet not found", async () => {
-    mockGetUserData.mockResolvedValue(null);
+    mockGetUserByFid.mockResolvedValue(null);
 
-    const res = await POST(makeRequest({ userFid: 123, campaignId: 1 }) as any);
+    const res = await POST(makeRequest({ campaignId: 1 }) as any);
     expect(res.status).toBe(404);
     const json = await res.json();
     expect(json.error).toContain("wallet");
   });
 
   it("returns 404 when no gamification entry exists", async () => {
-    mockGetUserData.mockResolvedValue({ address: "0xuser", username: "testuser" });
+    mockGetUserByFid.mockResolvedValue({ fid: 123, address: "0xuser", username: "testuser", pfpUrl: "" });
     mockDb.findGamificationEntry.mockResolvedValue(null);
 
-    const res = await POST(makeRequest({ userFid: 123, campaignId: 1 }) as any);
+    const res = await POST(makeRequest({ campaignId: 1 }) as any);
     expect(res.status).toBe(404);
     const json = await res.json();
     expect(json.error).toContain("Register");
   });
 
   it("updates score without evolving when below threshold", async () => {
-    mockGetUserData.mockResolvedValue({ address: "0xuser", username: "testuser" });
+    mockGetUserByFid.mockResolvedValue({ fid: 123, address: "0xuser", username: "testuser", pfpUrl: "" });
     mockDb.findGamificationEntry.mockResolvedValue(mockGameScore as any);
     mockGetLikes.mockResolvedValue(7); // below level 2 threshold of 10
     mockDb.updateGamificationScore.mockResolvedValue({} as any);
     mockDb.findUserMint.mockResolvedValue(mockMint as any);
 
-    const res = await POST(makeRequest({ userFid: 123, campaignId: 1 }) as any);
+    const res = await POST(makeRequest({ campaignId: 1 }) as any);
     const json = await res.json();
 
     expect(json.score).toBe(7);
@@ -105,7 +107,7 @@ describe("POST /api/gamification/update", () => {
   });
 
   it("evolves NFT when score reaches threshold (level 1 -> 2)", async () => {
-    mockGetUserData.mockResolvedValue({ address: "0xuser", username: "testuser" });
+    mockGetUserByFid.mockResolvedValue({ fid: 123, address: "0xuser", username: "testuser", pfpUrl: "" });
     mockDb.findGamificationEntry.mockResolvedValue(mockGameScore as any);
     mockGetLikes.mockResolvedValue(12); // above level 2 threshold of 10
     mockDb.updateGamificationScore.mockResolvedValue({} as any);
@@ -115,7 +117,7 @@ describe("POST /api/gamification/update", () => {
     mockDb.findCampaignById.mockResolvedValue({ id: 1, name: "Test Campaign" } as any);
     mockPublishCast.mockResolvedValue({ success: true, hash: "0xcast" });
 
-    const res = await POST(makeRequest({ userFid: 123, campaignId: 1 }) as any);
+    const res = await POST(makeRequest({ campaignId: 1 }) as any);
     const json = await res.json();
 
     expect(json.score).toBe(12);
@@ -132,7 +134,7 @@ describe("POST /api/gamification/update", () => {
   // --- MULTI-LEVEL JUMP TESTS (previously broken) ---
 
   it("evolves from level 1 -> 3 in one call when score is 30 (calls evolve twice)", async () => {
-    mockGetUserData.mockResolvedValue({ address: "0xuser", username: "testuser" });
+    mockGetUserByFid.mockResolvedValue({ fid: 123, address: "0xuser", username: "testuser", pfpUrl: "" });
     mockDb.findGamificationEntry.mockResolvedValue(mockGameScore as any);
     mockGetLikes.mockResolvedValue(30); // >= 25 for level 3
     mockDb.updateGamificationScore.mockResolvedValue({} as any);
@@ -142,7 +144,7 @@ describe("POST /api/gamification/update", () => {
     mockDb.findCampaignById.mockResolvedValue({ id: 1, name: "Test" } as any);
     mockPublishCast.mockResolvedValue({ success: true, hash: "0xcast" });
 
-    const res = await POST(makeRequest({ userFid: 123, campaignId: 1 }) as any);
+    const res = await POST(makeRequest({ campaignId: 1 }) as any);
     const json = await res.json();
 
     expect(json.level).toBe(3);
@@ -153,7 +155,7 @@ describe("POST /api/gamification/update", () => {
   });
 
   it("evolves from level 1 -> 4 in one call when score is 50 (calls evolve 3 times)", async () => {
-    mockGetUserData.mockResolvedValue({ address: "0xuser", username: "testuser" });
+    mockGetUserByFid.mockResolvedValue({ fid: 123, address: "0xuser", username: "testuser", pfpUrl: "" });
     mockDb.findGamificationEntry.mockResolvedValue(mockGameScore as any);
     mockGetLikes.mockResolvedValue(50);
     mockDb.updateGamificationScore.mockResolvedValue({} as any);
@@ -163,7 +165,7 @@ describe("POST /api/gamification/update", () => {
     mockDb.findCampaignById.mockResolvedValue({ id: 1, name: "Test" } as any);
     mockPublishCast.mockResolvedValue({ success: true, hash: "0xcast" });
 
-    const res = await POST(makeRequest({ userFid: 123, campaignId: 1 }) as any);
+    const res = await POST(makeRequest({ campaignId: 1 }) as any);
     const json = await res.json();
 
     expect(json.level).toBe(4);
@@ -172,7 +174,7 @@ describe("POST /api/gamification/update", () => {
   });
 
   it("handles partial evolution failure (evolves 1 of 3 levels, then chain fails)", async () => {
-    mockGetUserData.mockResolvedValue({ address: "0xuser", username: "testuser" });
+    mockGetUserByFid.mockResolvedValue({ fid: 123, address: "0xuser", username: "testuser", pfpUrl: "" });
     mockDb.findGamificationEntry.mockResolvedValue(mockGameScore as any);
     mockGetLikes.mockResolvedValue(50); // should go 1->4 = 3 jumps
     mockDb.updateGamificationScore.mockResolvedValue({} as any);
@@ -187,7 +189,7 @@ describe("POST /api/gamification/update", () => {
     mockDb.findCampaignById.mockResolvedValue({ id: 1, name: "Test" } as any);
     mockPublishCast.mockResolvedValue({ success: true, hash: "0xcast" });
 
-    const res = await POST(makeRequest({ userFid: 123, campaignId: 1 }) as any);
+    const res = await POST(makeRequest({ campaignId: 1 }) as any);
     const json = await res.json();
 
     // Partially evolved: made it from level 1 to level 2 (1 successful jump)
@@ -201,13 +203,13 @@ describe("POST /api/gamification/update", () => {
 
   it("does not evolve when already at max level", async () => {
     const maxLevelMint = { ...mockMint, level: 4 };
-    mockGetUserData.mockResolvedValue({ address: "0xuser", username: "testuser" });
+    mockGetUserByFid.mockResolvedValue({ fid: 123, address: "0xuser", username: "testuser", pfpUrl: "" });
     mockDb.findGamificationEntry.mockResolvedValue(mockGameScore as any);
     mockGetLikes.mockResolvedValue(999);
     mockDb.updateGamificationScore.mockResolvedValue({} as any);
     mockDb.findUserMint.mockResolvedValue(maxLevelMint as any);
 
-    const res = await POST(makeRequest({ userFid: 123, campaignId: 1 }) as any);
+    const res = await POST(makeRequest({ campaignId: 1 }) as any);
     const json = await res.json();
 
     expect(json.level).toBe(4);
@@ -216,13 +218,13 @@ describe("POST /api/gamification/update", () => {
   });
 
   it("returns score with level 1 when no mint found", async () => {
-    mockGetUserData.mockResolvedValue({ address: "0xuser", username: "testuser" });
+    mockGetUserByFid.mockResolvedValue({ fid: 123, address: "0xuser", username: "testuser", pfpUrl: "" });
     mockDb.findGamificationEntry.mockResolvedValue(mockGameScore as any);
     mockGetLikes.mockResolvedValue(8);
     mockDb.updateGamificationScore.mockResolvedValue({} as any);
     mockDb.findUserMint.mockResolvedValue(null);
 
-    const res = await POST(makeRequest({ userFid: 123, campaignId: 1 }) as any);
+    const res = await POST(makeRequest({ campaignId: 1 }) as any);
     const json = await res.json();
 
     expect(json.score).toBe(8);
