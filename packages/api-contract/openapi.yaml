@@ -1,4 +1,4 @@
-openapi: 3.1.0
+openapi: 3.0.3
 info:
   title: SocialDrop API
   version: "1.0.0"
@@ -442,11 +442,11 @@ components:
       properties:
         id: { type: integer }
         name: { type: string, maxLength: 120 }
-        imageUrl: { type: [string, "null"] }
+        imageUrl: { type: string, nullable: true }
         maxMints: { type: integer, minimum: 1, maximum: 10000 }
         mintedCount: { type: integer, minimum: 0 }
         isActive: { type: boolean }
-        creatorFid: { type: [integer, "null"] }
+        creatorFid: { type: integer, nullable: true }
         createdAt: { type: string, format: date-time }
     TrophyStats:
       type: object
@@ -486,13 +486,13 @@ components:
       required: [items, nextCursor]
       properties:
         items: { type: array, items: { $ref: "#/components/schemas/LeaderboardEntry" } }
-        nextCursor: { type: [string, "null"] }
+        nextCursor: { type: string, nullable: true }
     CampaignPage:
       type: object
       required: [items, nextCursor]
       properties:
         items: { type: array, items: { $ref: "#/components/schemas/Campaign" } }
-        nextCursor: { type: [string, "null"] }
+        nextCursor: { type: string, nullable: true }
     DashboardData:
       type: object
       required: [trendingCampaigns, featuredRankings]
@@ -518,7 +518,7 @@ components:
         score: { type: integer }
         onChainLevel: { type: integer, minimum: 1, maximum: 4 }
         evolved: { type: boolean }
-        leveledUpTo: { type: [integer, "null"] }
+        leveledUpTo: { type: integer, nullable: true }
     ClaimError:
       type: object
       required: [code, message]
@@ -531,15 +531,15 @@ components:
       properties:
         claimId: { type: string }
         status: { type: string, enum: [pending, minted, failed] }
-        tokenId: { type: [integer, "null"] }
-        transactionHash: { type: [string, "null"] }
-        level: { type: [integer, "null"] }
-        name: { type: [string, "null"] }
-        imageUrl: { type: [string, "null"] }
+        tokenId: { type: integer, nullable: true }
+        transactionHash: { type: string, nullable: true }
+        level: { type: integer, nullable: true }
+        name: { type: string, nullable: true }
+        imageUrl: { type: string, nullable: true }
         error:
-          oneOf:
+          nullable: true
+          allOf:
             - { $ref: "#/components/schemas/ClaimError" }
-            - { type: "null" }
     ClaimAccepted:
       type: object
       required: [claimId, status]
@@ -557,7 +557,7 @@ components:
       required: [items, nextCursor]
       properties:
         items: { type: array, items: { $ref: "#/components/schemas/ClaimSummary" } }
-        nextCursor: { type: [string, "null"] }
+        nextCursor: { type: string, nullable: true }
     ArenaView:
       type: object
       required: [campaign, leaderboard, me]
@@ -565,9 +565,9 @@ components:
         campaign: { $ref: "#/components/schemas/Campaign" }
         leaderboard: { type: array, items: { $ref: "#/components/schemas/LeaderboardEntry" } }
         me:
-          oneOf:
+          nullable: true
+          allOf:
             - { $ref: "#/components/schemas/Competitor" }
-            - { type: "null" }
     Metrics:
       type: object
       required: [totalCampaigns, activeCampaigns, totalMints, uniqueParticipants, registeredCompetitors]
@@ -628,6 +628,6 @@ components:
             message: { type: string }
             requestId: { type: string }
             details:
-              oneOf:
-                - { type: array, items: { $ref: "#/components/schemas/ApiErrorDetail" } }
-                - { type: "null" }
+              type: array
+              nullable: true
+              items: { $ref: "#/components/schemas/ApiErrorDetail" }

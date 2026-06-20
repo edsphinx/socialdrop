@@ -8,8 +8,8 @@ const doc = parse(raw);
 const paths = doc.paths ?? {};
 const schemas = doc.components?.schemas ?? {};
 
-test("OpenAPI is 3.1", () => {
-  assert.equal(doc.openapi, "3.1.0");
+test("OpenAPI is 3.0.3 (oapi-codegen lacks full 3.1 support)", () => {
+  assert.equal(doc.openapi, "3.0.3");
 });
 
 test("every required endpoint is present", () => {
@@ -84,7 +84,8 @@ test("maxMints is bounded 1..10000 in CreateCampaignRequest and Campaign", () =>
 test("SyncResult.leveledUpTo is always-present nullable (no conditional)", () => {
   const s = schemas.SyncResult;
   assert.ok(s.required.includes("leveledUpTo"));
-  assert.deepEqual(s.properties.leveledUpTo.type, ["integer", "null"]);
+  assert.equal(s.properties.leveledUpTo.type, "integer");
+  assert.equal(s.properties.leveledUpTo.nullable, true);
 });
 
 test("every spec error code appears in the document", () => {
