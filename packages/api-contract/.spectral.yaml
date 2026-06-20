@@ -7,5 +7,6 @@ rules:
   operation-success-response: error
   no-$ref-siblings: error
   oas3-unused-component: warn
+  operation-description: off
   info-contact: off
   info-license: off

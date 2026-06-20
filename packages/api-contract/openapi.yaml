@@ -1,0 +1,633 @@
+openapi: 3.1.0
+info:
+  title: SocialDrop API
+  version: "1.0.0"
+  description: >
+    SocialDrop v1 HTTP API. Identity is a Farcaster Quick Auth JWT verified against
+    domain socialdrop.live; the FID always comes from the token. See the design spec
+    docs/superpowers/specs/2026-06-18-api-contract-design.md.
+servers:
+  - url: https://api.socialdrop.live
+tags:
+  - name: campaigns
+  - name: claims
+  - name: me
+  - name: competitions
+  - name: aggregates
+  - name: ops
+  - name: webhooks
+security:
+  - bearerAuth: []
+
+paths:
+  /v1/campaigns:
+    get:
+      operationId: listCampaigns
+      tags: [campaigns]
+      security: []
+      parameters:
+        - { $ref: "#/components/parameters/ActiveFilter" }
+        - { $ref: "#/components/parameters/Limit" }
+        - { $ref: "#/components/parameters/Cursor" }
+      responses:
+        "200":
+          description: Campaign page.
+          headers: { ETag: { $ref: "#/components/headers/ETag" } }
+          content: { application/json: { schema: { $ref: "#/components/schemas/CampaignPage" } } }
+        "500": { $ref: "#/components/responses/Internal" }
+    post:
+      operationId: createCampaign
+      tags: [campaigns]
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema: { type: string }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/CreateCampaignRequest" } } }
+      responses:
+        "201":
+          description: Created campaign (allowlist-gated).
+          content: { application/json: { schema: { $ref: "#/components/schemas/Campaign" } } }
+        "400": { $ref: "#/components/responses/InvalidBody" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/NotAllowed" }
+        "413": { $ref: "#/components/responses/PayloadTooLarge" }
+        "415": { $ref: "#/components/responses/UnsupportedMediaType" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "502": { $ref: "#/components/responses/BadGateway" }
+        "500": { $ref: "#/components/responses/Internal" }
+  /v1/campaigns/{id}:
+    get:
+      operationId: getCampaign
+      tags: [campaigns]
+      security: []
+      parameters:
+        - { $ref: "#/components/parameters/CampaignId" }
+      responses:
+        "200":
+          description: Campaign.
+          headers: { ETag: { $ref: "#/components/headers/ETag" } }
+          content: { application/json: { schema: { $ref: "#/components/schemas/Campaign" } } }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/Internal" }
+  /v1/campaigns/{id}/leaderboard:
+    get:
+      operationId: getCampaignLeaderboard
+      tags: [campaigns]
+      security: []
+      parameters:
+        - { $ref: "#/components/parameters/CampaignId" }
+        - { $ref: "#/components/parameters/Limit" }
+        - { $ref: "#/components/parameters/Cursor" }
+      responses:
+        "200":
+          description: Per-campaign leaderboard page.
+          content: { application/json: { schema: { $ref: "#/components/schemas/LeaderboardPage" } } }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/Internal" }
+  /v1/campaigns/{id}/arena:
+    get:
+      operationId: getCampaignArena
+      tags: [campaigns]
+      security: []
+      parameters:
+        - { $ref: "#/components/parameters/CampaignId" }
+      responses:
+        "200":
+          description: Aggregate for the Arena screen (campaign + leaderboard + me).
+          content: { application/json: { schema: { $ref: "#/components/schemas/ArenaView" } } }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/Internal" }
+
+  /v1/claims:
+    post:
+      operationId: createClaim
+      tags: [claims]
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema: { type: string }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/CreateClaimRequest" } } }
+      responses:
+        "202":
+          description: Claim accepted; mint runs asynchronously. Poll GET /v1/claims/{claimId}.
+          content: { application/json: { schema: { $ref: "#/components/schemas/ClaimAccepted" } } }
+        "400": { $ref: "#/components/responses/InvalidBody" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Unprocessable" }
+        "413": { $ref: "#/components/responses/PayloadTooLarge" }
+        "415": { $ref: "#/components/responses/UnsupportedMediaType" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "502": { $ref: "#/components/responses/BadGateway" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        "500": { $ref: "#/components/responses/Internal" }
+  /v1/claims/{claimId}:
+    get:
+      operationId: getClaimStatus
+      tags: [claims]
+      parameters:
+        - { $ref: "#/components/parameters/ClaimId" }
+      responses:
+        "200":
+          description: Claim status (pending/minted/failed). When minted, carries tokenId, transactionHash, level, name, imageUrl.
+          content: { application/json: { schema: { $ref: "#/components/schemas/ClaimStatus" } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/Internal" }
+
+  /v1/me:
+    get:
+      operationId: getMe
+      tags: [me]
+      responses:
+        "200":
+          description: Authenticated FID.
+          content: { application/json: { schema: { $ref: "#/components/schemas/MeResponse" } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/Internal" }
+  /v1/me/claims:
+    get:
+      operationId: listMyClaims
+      tags: [me]
+      parameters:
+        - { $ref: "#/components/parameters/Limit" }
+        - { $ref: "#/components/parameters/Cursor" }
+      responses:
+        "200":
+          description: Eligible campaigns page.
+          content: { application/json: { schema: { $ref: "#/components/schemas/ClaimSummaryPage" } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/Internal" }
+  /v1/me/trophies:
+    get:
+      operationId: listMyTrophies
+      tags: [me]
+      parameters:
+        - { $ref: "#/components/parameters/Limit" }
+        - { $ref: "#/components/parameters/Cursor" }
+      responses:
+        "200":
+          description: Trophy stats + items.
+          content: { application/json: { schema: { $ref: "#/components/schemas/MyTrophiesResponse" } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/Internal" }
+
+  /v1/campaigns/{id}/competitors:
+    post:
+      operationId: registerCompetitor
+      tags: [competitions]
+      parameters:
+        - { $ref: "#/components/parameters/CampaignId" }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/RegisterCompetitorRequest" } } }
+      responses:
+        "201":
+          description: Registered competitor.
+          content: { application/json: { schema: { $ref: "#/components/schemas/Competitor" } } }
+        "400": { $ref: "#/components/responses/InvalidBody" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "413": { $ref: "#/components/responses/PayloadTooLarge" }
+        "415": { $ref: "#/components/responses/UnsupportedMediaType" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "500": { $ref: "#/components/responses/Internal" }
+  /v1/campaigns/{id}/competitors/me:
+    get:
+      operationId: getMyCompetitor
+      tags: [competitions]
+      parameters:
+        - { $ref: "#/components/parameters/CampaignId" }
+      responses:
+        "200":
+          description: The caller's competitor record.
+          content: { application/json: { schema: { $ref: "#/components/schemas/Competitor" } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotRegistered" }
+        "500": { $ref: "#/components/responses/Internal" }
+  /v1/campaigns/{id}/competitors/me/sync:
+    post:
+      operationId: syncMyCompetitor
+      tags: [competitions]
+      parameters:
+        - { $ref: "#/components/parameters/CampaignId" }
+      responses:
+        "200":
+          description: Recomputed score + confirmed on-chain level.
+          content: { application/json: { schema: { $ref: "#/components/schemas/SyncResult" } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotRegistered" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "502": { $ref: "#/components/responses/BadGateway" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+        "500": { $ref: "#/components/responses/Internal" }
+
+  /v1/dashboard:
+    get:
+      operationId: getDashboard
+      tags: [aggregates]
+      security: []
+      responses:
+        "200":
+          description: Home aggregate.
+          headers: { ETag: { $ref: "#/components/headers/ETag" } }
+          content: { application/json: { schema: { $ref: "#/components/schemas/DashboardData" } } }
+        "500": { $ref: "#/components/responses/Internal" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+  /v1/leaderboard:
+    get:
+      operationId: getGlobalLeaderboard
+      tags: [aggregates]
+      security: []
+      parameters:
+        - { $ref: "#/components/parameters/Limit" }
+        - { $ref: "#/components/parameters/Cursor" }
+      responses:
+        "200":
+          description: Global cross-campaign ranking page.
+          headers: { ETag: { $ref: "#/components/headers/ETag" } }
+          content: { application/json: { schema: { $ref: "#/components/schemas/LeaderboardPage" } } }
+        "500": { $ref: "#/components/responses/Internal" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+  /v1/metrics:
+    get:
+      operationId: getMetrics
+      tags: [aggregates]
+      responses:
+        "200":
+          description: Admin-only business metrics.
+          content: { application/json: { schema: { $ref: "#/components/schemas/Metrics" } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/NotAllowed" }
+        "500": { $ref: "#/components/responses/Internal" }
+
+  /healthz:
+    get:
+      operationId: getHealth
+      tags: [ops]
+      security: []
+      responses:
+        "200":
+          description: Liveness.
+          content: { application/json: { schema: { $ref: "#/components/schemas/HealthStatus" } } }
+  /readyz:
+    get:
+      operationId: getReadiness
+      tags: [ops]
+      security: []
+      responses:
+        "200":
+          description: Ready.
+          content: { application/json: { schema: { $ref: "#/components/schemas/HealthStatus" } } }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+  /openapi.json:
+    get:
+      operationId: getOpenapi
+      tags: [ops]
+      security: []
+      responses:
+        "200":
+          description: The served OpenAPI document.
+          content: { application/json: { schema: { type: object, additionalProperties: true } } }
+
+  /v1/webhooks/neynar:
+    post:
+      operationId: neynarWebhook
+      tags: [webhooks]
+      security:
+        - webhookSignature: []
+      description: >
+        Fails closed on missing/invalid signature. Signature MUST cover a provider timestamp
+        (replay protection). Processing is idempotent per provider event id; the minted
+        recipient derives from the signed payload only; the mint path is throughput-capped.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  type: object
+                  required: [fid, cast]
+                  properties:
+                    fid: { type: integer }
+                    cast:
+                      type: object
+                      required: [hash]
+                      properties:
+                        hash: { type: string }
+      responses:
+        "200":
+          description: Acknowledged.
+          content: { application/json: { schema: { $ref: "#/components/schemas/WebhookAck" } } }
+        "400": { $ref: "#/components/responses/InvalidBody" }
+        "401": { $ref: "#/components/responses/InvalidSignature" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "500": { $ref: "#/components/responses/Internal" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Farcaster Quick Auth JWT, verified against domain socialdrop.live.
+    webhookSignature:
+      type: apiKey
+      in: header
+      name: x-neynar-signature
+      description: HMAC signature over the raw body; paired with a provider timestamp header for replay protection.
+
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: Opaque pagination cursor; null nextCursor means no more pages.
+      schema: { type: string }
+    CampaignId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+    ClaimId:
+      name: claimId
+      in: path
+      required: true
+      schema: { type: string }
+    ActiveFilter:
+      name: active
+      in: query
+      required: false
+      schema: { type: boolean }
+
+  headers:
+    XRequestId:
+      description: Server-generated request id, echoed for correlation with logs.
+      schema: { type: string }
+    RetryAfter:
+      description: Seconds to wait before retrying.
+      schema: { type: integer }
+    ETag:
+      description: Entity tag for conditional requests.
+      schema: { type: string }
+
+  responses:
+    Unauthorized:
+      description: UNAUTHORIZED — missing/invalid/expired JWT or wrong audience.
+      content: { application/json: { schema: { $ref: "#/components/schemas/ApiError" } } }
+    NotAllowed:
+      description: NOT_ALLOWED — authenticated but not permitted (allowlist).
+      content: { application/json: { schema: { $ref: "#/components/schemas/ApiError" } } }
+    InvalidBody:
+      description: INVALID_BODY — schema validation failed; error.details lists fields.
+      content: { application/json: { schema: { $ref: "#/components/schemas/ApiError" } } }
+    NotFound:
+      description: NOT_FOUND.
+      content: { application/json: { schema: { $ref: "#/components/schemas/ApiError" } } }
+    NotRegistered:
+      description: NOT_REGISTERED — user is not a competitor in this campaign.
+      content: { application/json: { schema: { $ref: "#/components/schemas/ApiError" } } }
+    InvalidSignature:
+      description: INVALID_SIGNATURE — webhook signature/timestamp check failed.
+      content: { application/json: { schema: { $ref: "#/components/schemas/ApiError" } } }
+    Conflict:
+      description: 409 — NOT_LIKED / NO_NFT / ALREADY_CLAIMED / LIMIT_REACHED (branch on error.code).
+      content: { application/json: { schema: { $ref: "#/components/schemas/ApiError" } } }
+    Unprocessable:
+      description: 422 — WALLET_UNRESOLVED.
+      content: { application/json: { schema: { $ref: "#/components/schemas/ApiError" } } }
+    PayloadTooLarge:
+      description: PAYLOAD_TOO_LARGE — body exceeds 16 KB.
+      content: { application/json: { schema: { $ref: "#/components/schemas/ApiError" } } }
+    UnsupportedMediaType:
+      description: UNSUPPORTED_MEDIA_TYPE — missing/wrong Content-Type.
+      content: { application/json: { schema: { $ref: "#/components/schemas/ApiError" } } }
+    RateLimited:
+      description: RATE_LIMITED.
+      headers:
+        Retry-After: { $ref: "#/components/headers/RetryAfter" }
+      content: { application/json: { schema: { $ref: "#/components/schemas/ApiError" } } }
+    BadGateway:
+      description: 502 — CAST_PUBLISH_FAILED / MINT_FAILED / EVOLUTION_FAILED / UPSTREAM_UNAVAILABLE.
+      content: { application/json: { schema: { $ref: "#/components/schemas/ApiError" } } }
+    GatewayTimeout:
+      description: MINT_TIMEOUT.
+      content: { application/json: { schema: { $ref: "#/components/schemas/ApiError" } } }
+    ServiceUnavailable:
+      description: SERVICE_UNAVAILABLE — dependency unavailable; retry with backoff.
+      content: { application/json: { schema: { $ref: "#/components/schemas/ApiError" } } }
+    Internal:
+      description: INTERNAL.
+      content: { application/json: { schema: { $ref: "#/components/schemas/ApiError" } } }
+
+  schemas:
+    Campaign:
+      type: object
+      required: [id, name, imageUrl, maxMints, mintedCount, isActive, creatorFid, createdAt]
+      properties:
+        id: { type: integer }
+        name: { type: string, maxLength: 120 }
+        imageUrl: { type: [string, "null"] }
+        maxMints: { type: integer, minimum: 1, maximum: 10000 }
+        mintedCount: { type: integer, minimum: 0 }
+        isActive: { type: boolean }
+        creatorFid: { type: [integer, "null"] }
+        createdAt: { type: string, format: date-time }
+    TrophyStats:
+      type: object
+      required: [trophies, totalLikes, bestLevel]
+      properties:
+        trophies: { type: integer }
+        totalLikes: { type: integer }
+        bestLevel: { type: integer }
+    Trophy:
+      type: object
+      required: [id, campaignName, level, levelName, imageUrl]
+      properties:
+        id: { type: integer }
+        campaignName: { type: string }
+        level: { type: integer, minimum: 1, maximum: 4 }
+        levelName: { type: string }
+        imageUrl: { type: string }
+    MyTrophiesResponse:
+      type: object
+      required: [stats, items]
+      properties:
+        stats: { $ref: "#/components/schemas/TrophyStats" }
+        items: { type: array, items: { $ref: "#/components/schemas/Trophy" } }
+    LeaderboardEntry:
+      type: object
+      required: [campaignId, campaignName, fid, username, pfpUrl, score, level]
+      properties:
+        campaignId: { type: integer }
+        campaignName: { type: string }
+        fid: { type: integer }
+        username: { type: string }
+        pfpUrl: { type: string }
+        score: { type: integer }
+        level: { type: integer, minimum: 1, maximum: 4 }
+    LeaderboardPage:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/LeaderboardEntry" } }
+        nextCursor: { type: [string, "null"] }
+    CampaignPage:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/Campaign" } }
+        nextCursor: { type: [string, "null"] }
+    DashboardData:
+      type: object
+      required: [trendingCampaigns, featuredRankings]
+      properties:
+        trendingCampaigns: { type: array, items: { $ref: "#/components/schemas/Campaign" } }
+        featuredRankings: { type: array, items: { $ref: "#/components/schemas/LeaderboardEntry" } }
+    Competitor:
+      type: object
+      required: [campaignId, fid, tokenId, score, level, levelName, imageUrl, trackedCastHash]
+      properties:
+        campaignId: { type: integer }
+        fid: { type: integer }
+        tokenId: { type: integer }
+        score: { type: integer }
+        level: { type: integer, minimum: 1, maximum: 4 }
+        levelName: { type: string }
+        imageUrl: { type: string }
+        trackedCastHash: { type: string }
+    SyncResult:
+      type: object
+      required: [score, onChainLevel, evolved, leveledUpTo]
+      properties:
+        score: { type: integer }
+        onChainLevel: { type: integer, minimum: 1, maximum: 4 }
+        evolved: { type: boolean }
+        leveledUpTo: { type: [integer, "null"] }
+    ClaimError:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message: { type: string }
+    ClaimStatus:
+      type: object
+      required: [claimId, status, tokenId, transactionHash, level, name, imageUrl, error]
+      properties:
+        claimId: { type: string }
+        status: { type: string, enum: [pending, minted, failed] }
+        tokenId: { type: [integer, "null"] }
+        transactionHash: { type: [string, "null"] }
+        level: { type: [integer, "null"] }
+        name: { type: [string, "null"] }
+        imageUrl: { type: [string, "null"] }
+        error:
+          oneOf:
+            - { $ref: "#/components/schemas/ClaimError" }
+            - { type: "null" }
+    ClaimAccepted:
+      type: object
+      required: [claimId, status]
+      properties:
+        claimId: { type: string }
+        status: { type: string, enum: [pending] }
+    ClaimSummary:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+    ClaimSummaryPage:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/ClaimSummary" } }
+        nextCursor: { type: [string, "null"] }
+    ArenaView:
+      type: object
+      required: [campaign, leaderboard, me]
+      properties:
+        campaign: { $ref: "#/components/schemas/Campaign" }
+        leaderboard: { type: array, items: { $ref: "#/components/schemas/LeaderboardEntry" } }
+        me:
+          oneOf:
+            - { $ref: "#/components/schemas/Competitor" }
+            - { type: "null" }
+    Metrics:
+      type: object
+      required: [totalCampaigns, activeCampaigns, totalMints, uniqueParticipants, registeredCompetitors]
+      properties:
+        totalCampaigns: { type: integer }
+        activeCampaigns: { type: integer }
+        totalMints: { type: integer }
+        uniqueParticipants: { type: integer }
+        registeredCompetitors: { type: integer }
+    MeResponse:
+      type: object
+      required: [fid]
+      properties:
+        fid: { type: integer }
+    WebhookAck:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [ok] }
+    CreateCampaignRequest:
+      type: object
+      required: [name, castContent, maxMints, nftImageUrl]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        castContent: { type: string, minLength: 1, maxLength: 320 }
+        maxMints: { type: integer, minimum: 1, maximum: 10000 }
+        nftImageUrl: { type: string, pattern: "^(https://|ipfs://).+" }
+    CreateClaimRequest:
+      type: object
+      required: [campaignId]
+      properties:
+        campaignId: { type: integer, minimum: 1 }
+    RegisterCompetitorRequest:
+      type: object
+      required: [castHash]
+      properties:
+        castHash: { type: string, pattern: "^0x[0-9a-fA-F]+$" }
+    ApiErrorDetail:
+      type: object
+      required: [field, issue]
+      properties:
+        field: { type: string }
+        issue: { type: string }
+    ApiError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, requestId, details]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            requestId: { type: string }
+            details:
+              oneOf:
+                - { type: array, items: { $ref: "#/components/schemas/ApiErrorDetail" } }
+                - { type: "null" }

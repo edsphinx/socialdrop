@@ -4,15 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "bundle": "redocly bundle src/openapi.root.yaml -o openapi.yaml",
     "lint": "spectral lint openapi.yaml --ruleset .spectral.yaml",
     "gen:ts": "openapi-typescript openapi.yaml -o gen/ts/types.ts",
     "gen:go": "oapi-codegen -config oapi-codegen.yaml openapi.yaml",
     "test": "node --test test/",
-    "validate": "npm run bundle && npm run lint && npm run test"
+    "validate": "npm run lint && npm run test"
   },
   "devDependencies": {
-    "@redocly/cli": "^1.25.0",
     "@stoplight/spectral-cli": "^6.13.0",
     "openapi-typescript": "^7.4.0",
     "yaml": "^2.5.0"
