@@ -1,0 +1,35 @@
+name: api-contract
+on:
+  push:
+    paths: ["packages/api-contract/**", ".github/workflows/api-contract.yml"]
+  pull_request:
+    paths: ["packages/api-contract/**", ".github/workflows/api-contract.yml"]
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "24" }
+      - uses: actions/setup-go@v5
+        with: { go-version: "1.25" }
+      - name: Enable corepack (yarn 3)
+        run: corepack enable
+      - name: Install workspace deps
+        run: yarn install --immutable
+      - name: Lint + coverage tests
+        working-directory: packages/api-contract
+        run: yarn validate
+      - name: TypeScript codegen + type-check
+        working-directory: packages/api-contract
+        run: |
+          yarn gen:ts
+          npx tsc -p tsconfig.json
+      - name: Go codegen + build
+        working-directory: packages/api-contract
+        run: |
+          go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.4.1
+          mkdir -p gen/go/api
+          "$(go env GOPATH)/bin/oapi-codegen" -config oapi-codegen.yaml openapi.yaml
+          go mod tidy
+          go build ./gen/go/...
