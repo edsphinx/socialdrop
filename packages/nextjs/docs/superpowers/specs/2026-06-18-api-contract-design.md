@@ -275,7 +275,7 @@ openapi.yaml  (single source of truth, OpenAPI 3.1)
 
 - Encodes everything in §2–§7: named schemas (§4), paths (§5), the `ApiError` object, pagination params, the `Idempotency-Key`/`X-Request-Id` headers, caching/`304`, and security schemes.
 - **Security schemes:** `bearerAuth` (HTTP bearer JWT) on JWT/JWT+AL/JWT+ADM endpoints; a documented header scheme for the webhook signature+timestamp. Allowlist requirements (which OpenAPI cannot express natively) are documented on the relevant endpoints and surfaced as `403 NOT_ALLOWED`.
-- **Nullable** uses 3.1 `type: [<t>, "null"]`. **No anonymous nested object schemas** — every sub-object is a named component (`TrophyStats`, `ClaimError`, `ApiError`, …).
+- **Nullable** uses `nullable: true` (the document targets **OpenAPI 3.0.3**, not 3.1 — `oapi-codegen` does not yet fully support 3.1 nullable forms; 3.0.3 is semantically equivalent and works with both codegens). **No anonymous nested object schemas** — every sub-object is a named component (`TrophyStats`, `ClaimError`, `ApiError`, …).
 - The running API serves the document at `GET /openapi.json` (optional Redoc/Swagger UI).
 - Both codegen steps run in CI; a contract change that breaks either side fails the build, keeping FE/BE in lockstep.
 
