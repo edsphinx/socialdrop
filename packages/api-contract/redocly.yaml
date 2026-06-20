@@ -1,0 +1,5 @@
+apis:
+  socialdrop@v1:
+    root: src/openapi.root.yaml
+rules:
+  no-unresolved-refs: error

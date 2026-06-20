@@ -1,0 +1,11 @@
+extends: ["spectral:oas"]
+rules:
+  oas3-api-servers: error
+  operation-operationId: error
+  operation-operationId-unique: error
+  operation-tag-defined: error
+  operation-success-response: error
+  no-$ref-siblings: error
+  oas3-unused-component: warn
+  info-contact: off
+  info-license: off
