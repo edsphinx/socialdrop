@@ -1,0 +1,33 @@
+openapi: 3.1.0
+info:
+  title: SocialDrop API
+  version: "1.0.0"
+  description: >
+    SocialDrop v1 HTTP API. Identity is a Farcaster Quick Auth JWT verified against
+    domain socialdrop.live; the FID always comes from the token. See the design spec
+    docs/superpowers/specs/2026-06-18-api-contract-design.md.
+servers:
+  - url: https://api.socialdrop.live
+tags:
+  - name: campaigns
+  - name: claims
+  - name: me
+  - name: competitions
+  - name: aggregates
+  - name: ops
+  - name: webhooks
+security:
+  - bearerAuth: []
+paths:
+  $ref: "./paths/_index.yaml"
+components:
+  securitySchemes:
+    $ref: "./components/securitySchemes.yaml"
+  parameters:
+    $ref: "./components/parameters.yaml"
+  headers:
+    $ref: "./components/headers.yaml"
+  responses:
+    $ref: "./components/responses.yaml"
+  schemas:
+    $ref: "./components/schemas.yaml"
