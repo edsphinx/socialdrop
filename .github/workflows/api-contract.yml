@@ -24,7 +24,7 @@ jobs:
         working-directory: packages/api-contract
         run: |
           yarn gen:ts
-          npx tsc -p tsconfig.json
+          yarn typecheck
       - name: Go codegen + build
         working-directory: packages/api-contract
         run: |
