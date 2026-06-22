@@ -1,0 +1,18 @@
+{
+  "name": "@socialdrop/api-contract",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "spectral lint openapi.yaml --ruleset .spectral.yaml",
+    "gen:ts": "openapi-typescript openapi.yaml -o gen/ts/types.ts",
+    "gen:go": "oapi-codegen -config oapi-codegen.yaml openapi.yaml",
+    "test": "node --test 'test/*.test.mjs'",
+    "validate": "npm run lint && npm run test"
+  },
+  "devDependencies": {
+    "@stoplight/spectral-cli": "^6.13.0",
+    "openapi-typescript": "^7.4.0",
+    "yaml": "^2.5.0"
+  }
+}
