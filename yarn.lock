@@ -5855,6 +5855,7 @@ __metadata:
   dependencies:
     "@stoplight/spectral-cli": ^6.13.0
     openapi-typescript: ^7.4.0
+    typescript: ^5.8.2
     yaml: ^2.5.0
   languageName: unknown
   linkType: soft
